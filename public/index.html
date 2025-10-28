@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tarot Uygulaması - Giriş</title>
+    <style>
+        /* Genel Stiller */
+        body { 
+            font-family: Garamond, Georgia, 'Times New Roman', Times, serif; 
+            text-align: center; 
+            color: #ecf0f1; 
+            padding: 0; 
+            margin: 0; 
+            
+            /* SİTE ARKA PLANI */
+            background-image: url('/images/background.jpg'); 
+            background-size: cover; 
+            background-attachment: fixed;
+            background-repeat: no-repeat;
+            background-color: #0c1a2c; 
+        }
+        .screen { display: none; padding: 20px; min-height: 100vh; box-sizing: border-box; }
+        
+        /* Giriş/Kayıt Kutuları Stilleri (Yarı Şeffaf Siyah) */
+        #loginScreen, #registerScreen { 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            max-width: 400px; 
+            margin: 5vh auto; 
+            background: rgba(0, 0, 0, 0.75); 
+            border-radius: 12px; 
+            padding: 30px; 
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5); 
+            color: #ecf0f1; 
+        }
+        h2 { color: #f39c12; margin-bottom: 20px; }
+        
+        /* INPUT STİLLERİ (Beyaz Arka Plan ve Koyu Metin) */
+        input { 
+            width: 90%; padding: 12px; margin: 8px 0; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; 
+            background: #ffffff; 
+            color: #333; 
+        }
+        button { 
+            background: #e74c3c; color: white; padding: 12px 25px; border: none; border-radius: 6px; cursor: pointer; margin-top: 15px; font-weight: bold; transition: background 0.2s; 
+        }
+        button:hover { background: #c0392b; }
+        a { color: #3498db; text-decoration: none; }
+
+        /* Kart Seçim Ekranı Konteyneri */
+        #selectionScreen { padding-top: 0; position: relative; } 
+
+        /* Başlık Alanı Düzenlemesi (Hoş Geldin Metnini Ortalar) */
+        .header-area {
+            display: flex;
+            justify-content: center; 
+            align-items: center; 
+            max-width: 600px; 
+            margin: 30px auto 20px auto; 
+            padding: 0; 
+            text-align: center; 
+            background: transparent; 
+        }
+        
+        /* Hoş Geldin Başlığı Stilleri */
+        #welcomeMessage {
+            color: #333333; 
+            background: rgba(255, 255, 255, 0.85); 
+            padding: 10px 20px; 
+            margin: 0 auto; 
+            font-size: 1.8em; 
+            text-align: center;
+            border-radius: 6px; 
+            display: table; 
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2); 
+        }
+        
+        /* Seçim Bilgisi Metin Stilleri (Kırmızı Arka Plan) */
+        #selectionInfo { 
+            font-size: 1.0em; 
+            color: white; 
+            background: #e74c3c; 
+            display: inline-block;
+            padding: 10px 20px;
+            margin-bottom: 20px;
+            font-weight: bold;
+            border-radius: 6px;
+        }
+        
+        /* Kart Konteynırı DÜZENLEMESİ */
+        .card-container {
+            display: flex; 
+            flex-wrap: wrap; 
+            justify-content: center; 
+            gap: 10px; 
+            padding: 0 5px;
+            max-width: 900px; /* YENİ: Konteyner genişletildi */
+            margin: 0 auto;
+        }
+        
+        /* KART BOYUTU VE ARKA YÜZÜ STİLİ */
+        .card {
+            width: 65px;  /* ORİJİNAL GENİŞLİK KORUNDU */
+            height: 110px; /* ORİJİNAL YÜKSEKLİK KORUNDU */
+            
+            /* KART ARKA YÜZÜ GÖRSELİ */
+            background-image: url('/images/cardback.jpg'); 
+            background-size: cover; 
+            background-position: center;
+            background-color: transparent; 
+            
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: transform 0.1s, box-shadow 0.2s;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+            
+            font-size: 0; 
+            opacity: 0.9;
+            border: 1px solid #f39c12; 
+        }
+        .card:hover { transform: scale(1.05); opacity: 1; }
+        .card.selected { 
+            background-image: none; 
+            background-color: #2ecc71; 
+            color: white; 
+            border: 2px solid #2ecc71; 
+            transform: scale(1.05);
+            opacity: 1;
+            font-size: 0.7em; 
+        }
+        .card span { user-select: none; }
+    </style>
+</head>
+<body>
+    <div id="loadingScreen" class="screen" style="display: block;">
+        <h2>Uygulama Yükleniyor...</h2>
+    </div>
+
+    <div id="loginScreen" class="screen">
+        <h2>Giriş Yap (E-posta ile)</h2>
+        <input type="email" id="loginEmail" placeholder="E-posta Adresi">
+        <input type="password" id="loginPassword" placeholder="Şifre">
+        <button onclick="handleLogin()">Giriş Yap</button>
+        <p>Hesabın yok mu? <a href="#" onclick="showScreen('registerScreen')">Kayıt Ol</a></p>
+        <p id="loginError" style="color: yellow;"></p>
+    </div>
+
+    <div id="registerScreen" class="screen">
+        <h2>Yeni Hesap Oluştur</h2>
+        <input type="text" id="registerName" placeholder="Adınız">
+        <input type="text" id="registerSurname" placeholder="Soyadınız">
+        <input type="email" id="registerEmail" placeholder="E-posta Adresiniz (Zorunlu)">
+        <input type="tel" id="registerPhone" placeholder="Telefon Numaranız (Zorunlu)">
+        <input type="password" id="registerPassword" placeholder="Şifreniz">
+        <button onclick="handleRegister()">Kayıt Ol</button>
+        <p>Zaten hesabın var mı? <a href="#" onclick="showScreen('loginScreen')">Giriş Yap</a></p>
+        <p id="registerError" style="color: yellow;"></p>
+    </div>
+
+    <div id="selectionScreen" class="screen">
+        
+        <div class="header-area">
+            <h2 id="welcomeMessage">Hoş Geldin!</h2>
+            </div>
+
+        <p id="selectionInfo">Lütfen dilediğiniz kartı seçin. Seçim adedi: <span id="selectionCount">0</span></p>
+        <div class="card-container" id="cardContainer">
+            </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        // Ekranları gizleyip gösterme fonksiyonu
+        function showScreen(id) {
+            document.querySelectorAll('.screen').forEach(s => s.style.display = 'none');
+            if (id === 'loginScreen' || id === 'registerScreen') {
+                 document.getElementById(id).style.display = 'flex';
+            } else {
+                 document.getElementById(id).style.display = 'block';
+            }
+        }
+        
+        let socket;
+        let selectedCards = [];
+        const CARD_IDS = Array.from({length: 78}, (_, i) => i + 1); 
+
+        // ÇIKIŞ YAP FONKSİYONU (Buton kaldırıldı ama bu fonksiyon kodda kalmalı)
+        function handleLogout() {
+            localStorage.clear(); 
+            if (socket) socket.disconnect(); 
+            showScreen('loginScreen'); 
+        }
+
+        // Giriş ve Kayıt Fonksiyonları (Sunucuya istek gönderir)
+        async function handleLogin() {
+            const email = document.getElementById(`loginEmail`).value;
+            const password = document.getElementById(`loginPassword`).value;
+            const errorElement = document.getElementById(`loginError`);
+            errorElement.innerText = ''; 
+            
+            try {
+                const response = await fetch(`/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    localStorage.setItem('userToken', data.token); 
+                    localStorage.setItem('fullName', `${data.name} ${data.surname}`); 
+                    connectSocket(); 
+                } else {
+                    errorElement.innerText = data.message;
+                }
+            } catch (e) {
+                errorElement.innerText = 'Sunucuya bağlanılamadı.';
+            }
+        }
+
+        async function handleRegister() {
+            const name = document.getElementById(`registerName`).value;
+            const surname = document.getElementById(`registerSurname`).value;
+            const email = document.getElementById(`registerEmail`).value;
+            const phone = document.getElementById(`registerPhone`).value;
+            const password = document.getElementById(`registerPassword`).value;
+            const errorElement = document.getElementById(`registerError`);
+            errorElement.innerText = ''; 
+
+            try {
+                const response = await fetch(`/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password, name, surname, phone })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    localStorage.setItem('userToken', data.token); 
+                    localStorage.setItem('fullName', `${name} ${surname}`); 
+                    connectSocket(); 
+                } else {
+                    errorElement.innerText = data.message;
+                }
+            } catch (e) {
+                errorElement.innerText = 'Sunucuya bağlanılamadı.';
+            }
+        }
+
+        // Socket.IO Bağlantısı ve Olay Dinleyicileri
+        function connectSocket() {
+            showScreen('loadingScreen');
+            socket = io(); 
+            const token = localStorage.getItem('userToken'); 
+            const fullName = localStorage.getItem('fullName');
+
+
+            socket.on('connect', () => {
+                if (token) {
+                    socket.emit('authenticate', token); 
+                } else {
+                    showScreen('loginScreen'); 
+                }
+            });
+
+            socket.on('auth_success', (data) => {
+                if (data.role === 'querent') { 
+                    document.getElementById('welcomeMessage').innerText = `Hoş Geldin, ${fullName}!`;
+                    showScreen('selectionScreen'); 
+                    renderCards(); 
+                }
+            });
+
+            socket.on('auth_fail', (message) => {
+                localStorage.clear(); 
+                alert(`Oturumunuz sona erdi: ${message}`);
+                showScreen('loginScreen'); 
+            });
+            
+            socket.on('start_selection', () => {
+                 selectedCards = []; 
+                 document.getElementById('selectionCount').innerText = selectedCards.length; 
+                 document.querySelectorAll('.card').forEach(c => {
+                     c.classList.remove('selected'); 
+                     c.style.pointerEvents = 'auto'; 
+                     c.innerHTML = `<span>SEÇİLDİ</span>`; 
+                 });
+            });
+        }
+        
+        // Kart Seçimi Mantığı
+        function handleCardClick(id, element) {
+            if (selectedCards.includes(id)) return;
+
+            selectedCards.push(id);
+            element.classList.add('selected'); 
+            
+            socket.emit('card_selected', { cardId: id }); 
+
+            document.getElementById('selectionCount').innerText = selectedCards.length; 
+        }
+
+        // 78 Kartı Ekrana Çizme Fonksiyonu
+        function renderCards() {
+            const container = document.getElementById('cardContainer');
+            container.innerHTML = ''; 
+            
+            const shuffledCards = [...CARD_IDS].sort(() => 0.5 - Math.random());
+            
+            shuffledCards.forEach(id => {
+                const cardElement = document.createElement('div');
+                cardElement.className = 'card';
+                cardElement.innerHTML = `<span>SEÇİLDİ</span>`; 
+                cardElement.dataset.cardId = id;
+                cardElement.onclick = () => handleCardClick(id, cardElement);
+                container.appendChild(cardElement);
+            });
+        }
+
+        // Uygulama yüklendiğinde (Sayfa açıldığında)
+        window.onload = () => {
+            if (localStorage.getItem('userToken')) {
+                connectSocket(); 
+            } else {
+                showScreen('loginScreen'); 
+            }
+        };
+    </script>
+</body>
+</html>

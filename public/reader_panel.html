@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tarot Analiz Paneli - (GİZLİ)</title>
+    <style>
+        /* YENİ RENK PALETİ: Açık Kahve (#C8A375) / Koyu Kahve (#543A23) / Beyaz (#F7F7F7) */
+
+        body { 
+            font-family: Garamond, Georgia, 'Times New Roman', Times, serif; 
+            padding: 20px; 
+            color: #F7F7F7; 
+            background-image: url('/images/background.jpg'); 
+            background-size: cover; 
+            background-attachment: fixed;
+            background-repeat: no-repeat;
+            background-color: #2c3e50; 
+        }
+        h1 { color: #C8A375; text-align: center; margin-bottom: 20px; }
+
+        /* Yönetici Giriş Kutusu Stili */
+        #loginScreen { 
+            background: rgba(0, 0, 0, 0.85); 
+            border-radius: 12px; 
+            padding: 30px; 
+            max-width: 400px; 
+            margin: 100px auto; 
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+        #loginScreen h2 { color: #C8A375; }
+        #loginScreen input { 
+            background: #ffffff; 
+            color: #333; 
+            padding: 10px; 
+            margin-bottom: 10px; 
+            border-radius: 4px; 
+            border: none; 
+            width: calc(100% - 20px);
+        }
+        #loginScreen button { 
+            background: #C8A375; 
+            color: #333; 
+            padding: 10px; 
+            border: none; 
+            width: 100%; 
+            font-weight: bold; 
+            cursor: pointer;
+        }
+        
+        /* Sekme Stilleri */
+        .tabs { margin-bottom: 20px; border-bottom: 2px solid #C8A375; display: flex; align-items: center;} 
+        .tab-button {
+            background: #543A23; color: #F7F7F7; border: none; padding: 10px 20px; cursor: pointer; margin-right: 5px; border-radius: 5px 5px 0 0; font-weight: bold; transition: background 0.3s;
+        }
+        .tab-button.active { background: #C8A375; color: #333333; }
+        .tab-button.logout { background: #7F0000; margin-left: 10px; }
+        .tab-button.shuffle { background: #a0522d; margin-left: auto; }
+
+        .tab-content { padding-top: 20px; }
+
+        /* YENİ: Canlı Okuma Kapsayıcısı - Flexbox ile Sol (Kartlar) ve Sağ (Analiz) olarak ikiye ayırır */
+        .live-reading-flex {
+            display: flex;
+            gap: 20px;
+            align-items: flex-start; /* İçeriğin yukarıdan başlamasını sağlar */
+        }
+        
+        /* SOL TARAF: Kartların bulunduğu yer. 3'lü kolon için Grid kullanıyoruz */
+        #liveSpreadContainer {
+            flex: 3; 
+            display: grid;
+            grid-template-columns: repeat(3, 1fr); 
+            gap: 20px; 
+        }
+
+        /* SAĞ TARAF: Okuyucu Analiz Paneli */
+        #analysisPanel {
+            flex: 1; 
+            min-width: 300px;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            border-top: 5px solid #C8A375;
+            position: sticky; 
+            top: 20px; 
+            height: fit-content; 
+        }
+        
+        /* YENİ: ÇÖZÜM TUŞU STİLİ */
+        #solveButton {
+            background: #ff9933; /* Turuncu renk vurgusu */
+            color: #333; 
+            padding: 12px; 
+            border: none; 
+            width: 100%; 
+            font-weight: bold; 
+            cursor: pointer;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-size: 1.1em;
+            transition: background 0.3s;
+        }
+        #solveButton:hover {
+            background: #e08520;
+        }
+
+        /* YENİ: ÇÖZÜM KARTI KAPSAYICISI STİLİ */
+        #solutionCardContainer {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px dashed #C8A375;
+            text-align: center;
+        }
+        
+        /* KART VURGU STİLLERİ (ŞEFFAF ZEMİN) */
+        .highlight-positive {
+            background-color: rgba(0, 128, 0, 0.2) !important; /* Şeffaf yeşil */
+            border-left: 3px solid #008000 !important; /* Sol çizgi yeşil */
+        }
+        .highlight-negative {
+            background-color: rgba(255, 0, 0, 0.2) !important; /* Şeffaf kırmızı */
+            border-left: 3px solid #FF0000 !important; /* Sol çizgi kırmızı */
+        }
+        
+        /* DUYGU ve ARKETİP VURGULARI */
+        .highlight-emotion {
+            background-color: rgba(255, 165, 0, 0.2) !important; /* Şeffaf Turuncu */
+            border-left: 3px solid #FFA500 !important;
+        }
+        .highlight-archetype {
+            background-color: rgba(0, 0, 255, 0.1) !important; /* Şeffaf Mavi */
+            border-left: 3px solid #0000FF !important;
+        }
+        .archetype-text {
+            color: #000080 !important; /* Lacivert */
+            font-weight: bold !important;
+        }
+        
+        /* YENİ OTURUM BAŞLADI YAZI BOYUTU DÜZELTMESİ */
+        #sessionStatus { 
+            background: #543A23; 
+            color: #F7F7F7; 
+            padding: 10px; 
+            border-radius: 4px;
+            font-size: 0.8em; /* 3 font küçültüldü varsayımı ile (0.8em) */
+        }
+
+
+        /* Mobil Uyum */
+        @media (max-width: 1000px) {
+            .live-reading-flex { flex-direction: column; }
+            #liveSpreadContainer { grid-template-columns: repeat(2, 1fr); } 
+            #analysisPanel { position: static; width: 100%; }
+        }
+        @media (max-width: 768px) {
+            #liveSpreadContainer { grid-template-columns: 1fr; } 
+        }
+
+        /* KART STİLLERİ */
+        .card-item { background: rgba(255, 255, 255, 0.95); color: #333333; padding: 15px; border-left: 5px solid #C8A375; border-radius: 4px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.2); display: flex; flex-direction: column; align-items: center; text-align: center; min-height: 450px; position: relative; }
+        .card-image { width: 100px; height: auto; margin-right: 0; border-radius: 4px; box-shadow: 0 0 5px rgba(0, 0, 0, 0.5); }
+        .card-image.reversed { transform: rotate(180deg); opacity: 0.8; }
+        .card-item h3 { font-size: 1.2em; text-transform: uppercase; color: #543A23; margin: 5px 0 10px 0; padding-bottom: 5px; border-bottom: 1px solid #C8A375; width: 100%; font-weight: bold; }
+        .card-name { font-size: 1.0em; color: #C8A375; margin-top: 5px; margin-bottom: 10px; } 
+        .querent-name-area { margin-top: 10px; margin-bottom: 5px; font-size: 0.6em; font-weight: bold; text-align: center; width: 100%; line-height: 1.2; }
+        .querent-name-area .label { color: #7F0000; font-weight: normal; }
+        .querent-name-area .name { color: #333333; }
+        .meaning-categories { margin-top: 10px; padding-top: 10px; border-top: 1px dashed #ddd; display: flex; flex-direction: column; gap: 5px; font-size: 0.7em; text-align: left; width: 100%; }
+        .category-item { display: flex; flex-direction: row; align-items: baseline; background: #eee; padding: 5px; border-radius: 3px; }
+        .category-item span:first-child { min-width: 100px; font-weight: bold; color: #7F0000; text-transform: capitalize; margin-right: 5px; }
+        .category-item span:last-child { font-weight: normal; text-transform: capitalize; flex-grow: 1; }
+        .positive-title { color: #16a085 !important; } 
+        .negative-title { color: #7F0000 !important; } 
+        .emotion-item span:first-child { color: #ff6600 !important; }
+        .card-info { margin-top: 10px; font-size: 0.6em; color: #888; }
+        #userTable { width: 100%; border-collapse: collapse; background: rgba(255, 255, 255, 0.95); color: #333333; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3); }
+        #userTable th, #userTable td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
+        #userTable th { background: #C8A375; color: #333333; font-weight: bold; text-transform: uppercase; }
+        #userTable tr:hover { background: #f0f0f0; }
+        .status-reading { color: #7F0000; font-weight: bold; }
+    </style>
+</head>
+<body>
+    
+    <div id="loginScreen" style="display: block;">
+        <h2 style="color: #C8A375;">Tarot Bakıcısı Girişi</h2>
+        <input type="text" id="readerUsername" placeholder="Kullanıcı Adı"> 
+        <input type="password" id="readerPassword" placeholder="Şifre">
+        <button onclick="handleReaderLogin()">Giriş Yap</button>
+        <p id="loginError" style="color: red; margin-top: 10px;"></p>
+    </div>
+
+    <div id="mainPanel" style="display: none;">
+        <h1>Tarot Bakıcısı Yönetim Paneli</h1>
+        
+        <div class="tabs">
+            <button class="tab-button active" onclick="showTab('live')">Canlı Oturum</button>
+            <button class="tab-button" onclick="showTab('users')">Kayıtlı Kullanıcılar</button>
+            
+            <button class="tab-button shuffle" onclick="handleShuffleDeck()">Desteyi Karıştır</button> 
+            
+            <button class="tab-button logout" onclick="handleReaderLogout()">Çıkış Yap</button>
+        </div>
+
+        <div id="liveTab" class="tab-content" style="display: block;">
+            
+            <div id="sessionStatus" class="session-info">
+                Bağlantı Başarılı. Yeni seçimler bekleniyor...
+            </div>
+            
+            <div class="live-reading-flex">
+
+                <div id="liveSpreadContainer">
+                    </div>
+
+                <div id="analysisPanel">
+                    
+                    <button id="solveButton" onclick="generateSolutionCard()">ÇÖZÜM KARTI ÇEK</button>
+
+                    <div id="solutionCardContainer">
+                        <p style="color: #ccc; margin: 10px;">Çözüm kartını çekmek için yukarıdaki tuşa basın. Kart, danışana iletilecek en net eylem çağrısını temsil edecektir.</p>
+                    </div>
+
+                </div>
+            </div>
+            
+        </div>
+
+        <div id="usersTab" class="tab-content">
+            <h2>Kayıtlı Tüm Kullanıcılar</h2>
+            <table id="userTable">
+                <thead>
+                    <tr>
+                        <th>Ad Soyad</th>
+                        <th>E-posta</th>
+                        <th>Telefon</th>
+                        <th>Durum</th>
+                    </tr>
+                </thead>
+                <tbody id="userTableBody">
+                </tbody>
+            </table>
+            <p id="userCount">Toplam Kullanıcı: 0</p>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        // DOM Elementleri
+        const liveSpreadContainer = document.getElementById('liveSpreadContainer');
+        const sessionStatus = document.getElementById('sessionStatus');
+        const userTableBody = document.getElementById('userTableBody');
+        const userCount = document.getElementById('userCount');
+        const loginScreen = document.getElementById('loginScreen');
+        const mainPanel = document.getElementById('mainPanel');
+        const loginError = document.getElementById('loginError');
+        const solutionCardContainer = document.getElementById('solutionCardContainer'); 
+
+        let socket;
+        let currentQuerent = "Bilinmiyor";
+        let selectedCards = []; 
+        let currentSessionId = null; 
+
+
+        // ------------------------------------------------------------------
+        // --- GİRİŞ / YETKİLENDİRME / OTURUM YÖNETİMİ ---
+        // ------------------------------------------------------------------
+
+        async function handleReaderLogin() {
+            const username = document.getElementById('readerUsername').value; 
+            const password = document.getElementById('readerPassword').value;
+            loginError.innerText = '';
+            
+            try {
+                const response = await fetch('/reader-login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    localStorage.setItem('readerToken', data.token);
+                    connectSocket();
+                } else {
+                    loginError.innerText = data.message;
+                }
+            } catch (e) {
+                loginError.innerText = 'Sunucuya bağlanılamadı.';
+            }
+        }
+
+        function handleReaderLogout() {
+            localStorage.removeItem('readerToken');
+            if (socket) socket.disconnect();
+            loginScreen.style.display = 'block';
+            mainPanel.style.display = 'none';
+            resetPanel();
+        }
+
+        function handleShuffleDeck() {
+            if (confirm("Emin misiniz? Bu işlem, mevcut aktif okuma oturumunu sıfırlayacaktır.")) {
+                if (socket && socket.connected) {
+                    socket.emit('shuffle_deck'); 
+                } else {
+                    alert("Sunucuya bağlı değilsiniz. Giriş yapmayı deneyin.");
+                }
+            }
+        }
+        
+        function resetPanel() {
+            currentQuerent = "Bilinmiyor";
+            currentSessionId = null;
+            liveSpreadContainer.innerHTML = ''; 
+            selectedCards = [];
+            solutionCardContainer.innerHTML = '<p style="color: #ccc; margin: 10px;">Çözüm kartını çekmek için yukarıdaki tuşa basın. Kart, danışana iletilecek en net eylem çağrısını temsil edecektir.</p>';
+        }
+
+        function connectSocket() {
+            const token = localStorage.getItem('readerToken');
+            if (!token) return;
+
+            socket = io(); 
+            socket.on('connect', () => {
+                socket.emit('authenticate', token); 
+            });
+
+            socket.on('auth_success', (data) => {
+                if (data.role === 'reader') {
+                    loginScreen.style.display = 'none';
+                    mainPanel.style.display = 'block';
+                    sessionStatus.innerText = "Bağlantı Başarılı. Yeni seçimler bekleniyor...";
+                    resetPanel(); 
+                    socket.emit('shuffle_deck'); 
+                }
+            });
+
+            socket.on('auth_fail', (message) => {
+                handleReaderLogout();
+                alert(`Yetkilendirme Hatası: ${message}`);
+            });
+            
+            socket.on('deck_shuffled', (message) => {
+                alert(message); 
+                sessionStatus.innerHTML = `<strong>DESTE KARIŞTIRILDI.</strong> Yeni müşteri bekleniyor.`;
+                resetPanel();
+            });
+
+            // YENİ OKUMA OTURUMU
+            socket.on('new_reading_session', (data) => {
+                currentQuerent = data.fullName; 
+                currentSessionId = data.sessionId;
+                sessionStatus.innerHTML = `<strong>YENİ OTURUM BAŞLADI:</strong> ${currentQuerent} şu an kart seçiyor.`;
+                resetPanel();
+            });
+
+            // KART SEÇİM GÜNCELLEMESİ (SADECE GÖRÜNTÜLEME)
+            socket.on('selection_update', (data) => {
+                selectedCards.push(data);
+                
+                liveSpreadContainer.innerHTML = '';
+                
+                selectedCards.forEach((card) => {
+                    liveSpreadContainer.insertAdjacentHTML('beforeend', createCardElement(card)); 
+                });
+            });
+
+            // SUNUCUDAN GELEN ÇÖZÜM KARTI BİLGİSİ (Çözüm Tuşu Sonrası)
+            socket.on('solution_card_data', (data) => {
+                const solutionMessage = data.solutionMessage;
+                const cardData = data.cardData;
+
+                const solutionCardHTML = createSolutionCardElement(cardData);
+                
+                solutionCardContainer.innerHTML = solutionCardHTML + `
+                    <h4 style="color: #ff9933; margin-top: 20px;">Okuyucu Notu / ÇÖZÜM MESAJI</h4>
+                    <p style="font-size: 0.9em; color: #fff; text-align: justify; padding: 0 10px 10px;">
+                        ${solutionMessage}
+                    </p>
+                `;
+            });
+
+
+            // KULLANICI LİSTESİ ALMA
+            socket.on('all_users_list', (usersList) => {
+                userTableBody.innerHTML = ''; 
+                usersList.forEach(user => {
+                    const row = userTableBody.insertRow();
+                    const statusText = user.isCurrentlyReading ? '<span class="status-reading">CANLI OKUMA</span>' : 'Çevrimdışı';
+                    
+                    row.innerHTML = `
+                        <td>${user.name} ${user.surname}</td>
+                        <td>${user.email}</td>
+                        <td>${user.phone}</td>
+                        <td>${statusText}</td>
+                    `;
+                });
+                userCount.innerText = `Toplam Kullanıcı: ${usersList.length}`;
+            });
+        }
+
+        // ------------------------------------------------------------------
+        // --- KART GÖRÜNTÜLEME VE ÇÖZÜM MANTIKLARI ---
+        // ------------------------------------------------------------------
+        
+        // Müşterinin seçtiği kartları görüntülemek için (Sol Panel)
+        function createCardElement(data) {
+            const categories = data.meaningCategories;
+            const cardClass = (data.position.includes("Ters")) ? 'reversed' : '';
+            const cardTitle = `#${data.selectionCount}. ${data.cardName}`;
+            
+            // VURGU MANTIĞI: Orijinal pozisyona göre vurgu yapılır.
+            let positiveHighlightClass = '';
+            let negativeHighlightClass = '';
+
+            if (data.position.includes("Düz")) {
+                positiveHighlightClass = 'highlight-positive';
+            } else if (data.position.includes("Ters")) {
+                negativeHighlightClass = 'highlight-negative';
+            }
+
+
+            return `
+                <div class="card-item">
+                    <h3>${cardTitle}</h3>
+                    <p class="card-name" style="color: ${data.position.includes('Ters') ? '#7F0000' : '#C8A375'};">${data.position}</p>
+                    
+                    <img src="${data.imagePath}" class="card-image ${cardClass}" alt="${data.cardName} Görseli">
+                    
+                    <div class="card-details" style="text-align: left; width: 100%;">
+                        <div class="querent-name-area">
+                            <span class="label">SEÇEN:</span> <span class="name">${data.querentName}</span>
+                        </div>
+                        
+                        <div class="meaning-categories">
+                            <div class="category-item">
+                                <span class="category-title">sayı:</span> <span>${categories.number_rep}</span>
+                            </div>
+                            <div class="category-item highlight-archetype">
+                                <span class="category-title archetype-text">arketip:</span> <span>${categories.archetype}</span>
+                            </div>
+                            <div class="category-item highlight-emotion">
+                                <span class="category-title emotion-item">duygu:</span> <span>${categories.emotion}</span>
+                            </div>
+                            <div class="category-item">
+                                <span class="category-title">enerji:</span> <span>${categories.energy}</span>
+                            </div>
+                            <div class="category-item">
+                                <span class="category-title">rol:</span> <span>${categories.role}</span>
+                            </div>
+                            <div class="category-item ${positiveHighlightClass}"> 
+                                <span class="category-title positive-title">olumlu:</span> <span>${categories.positive}</span>
+                            </div>
+                            <div class="category-item ${negativeHighlightClass}"> 
+                                <span class="category-title negative-title">zorluk:</span> <span>${categories.negative}</span>
+                            </div>
+                            <div class="category-item">
+                                <span class="category-title">durum:</span> <span>${categories.situation}</span>
+                            </div>
+                            <div class="category-item">
+                                <span class="category-title">kişi:</span> <span>${categories.person_rep}</span>
+                            </div>
+                            <div class="category-item">
+                                <span class="category-title">astro:</span> <span>${categories.astrology}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-info" style="margin-top: 10px;">Kart ID: ${data.cardId}</div>
+                </div>
+            `;
+        }
+
+        // Çözüm Kartını görüntülemek için (Sağ Panel)
+        function createSolutionCardElement(data) {
+            const cardClass = (data.position.includes("Ters")) ? 'reversed' : '';
+            const cardTitle = `${data.cardName}`;
+            const positionColor = data.position.includes('Ters') ? '#7F0000' : '#008000';
+
+            return `
+                <div class="card-item" style="border-left: 5px solid #ff9933; background: rgba(255, 255, 255, 0.95); padding: 15px; margin-bottom: 20px; min-height: auto;">
+                    <h3 style="color: #ff9933; border-bottom: 1px dashed #ff9933;">ÇÖZÜM KARTI: ${cardTitle}</h3>
+                    <p class="card-name" style="color: ${positionColor}; margin-bottom: 15px;">Pozisyon: ${data.position}</p>
+                    
+                    <img src="${data.imagePath}" class="card-image ${cardClass}" alt="${data.cardName} Görseli" style="width: 120px;">
+                    
+                    <div class="querent-name-area" style="margin-top: 15px; font-size: 0.8em;">
+                        <span class="label">MÜŞTERİ:</span> <span class="name">${data.querentName}</span>
+                    </div>
+                    
+                </div>
+            `;
+        }
+
+
+        // ÇÖZÜM KARTI ÇEKME İŞLEVİ
+        function generateSolutionCard() {
+            if (currentQuerent !== "Bilinmiyor" && selectedCards.length > 0) {
+                solutionCardContainer.innerHTML = '<p style="color: #ff9933; margin: 10px;">Sunucudan Çözüm Kartı verisi bekleniyor...</p>';
+                
+                socket.emit('request_solution_card', { 
+                    querentName: currentQuerent,
+                    lastCardId: selectedCards[selectedCards.length - 1].cardId
+                });
+
+            } else {
+                solutionCardContainer.innerHTML = '<p style="color: red; margin: 10px;">Lütfen önce bir müşterinin kart seçmesini bekleyin.</p>';
+            }
+        }
+        
+        // Sayfa yüklendiğinde, başlatma ve yetkilendirme kontrolü yapılır.
+        document.addEventListener('DOMContentLoaded', () => {
+            // Fonksiyonları global olarak kullanılabilir yap
+            window.handleReaderLogin = handleReaderLogin;
+            window.handleReaderLogout = handleReaderLogout;
+            window.handleShuffleDeck = handleShuffleDeck;
+            window.showTab = showTab;
+            window.generateSolutionCard = generateSolutionCard; 
+            
+            const storedToken = localStorage.getItem('readerToken');
+            if (storedToken) { 
+                connectSocket(); 
+            } else { 
+                loginScreen.style.display = 'block'; 
+            }
+        });
+        
+        function showTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => { tab.style.display = 'none'; });
+            const activeTab = document.getElementById(tabName + 'Tab');
+            if (activeTab) activeTab.style.display = 'block';
+
+            document.querySelectorAll('.tab-button').forEach(btn => { btn.classList.remove('active'); });
+            document.querySelector(`.tab-button[onclick="showTab('${tabName}')"]`)?.classList.add('active');
+
+            if (tabName === 'users') { requestUserList(); }
+        }
+
+        function requestUserList() {
+            if (socket && socket.connected) {
+                userTableBody.innerHTML = '<tr><td colspan="4">Kullanıcı listesi yükleniyor...</td></tr>';
+                socket.emit('get_all_users');
+            } else { userTableBody.innerHTML = '<tr><td colspan="4" style="color:red;">Sunucuya bağlı değilsiniz.</td></tr>'; }
+        }
+    </script>
+</body>
+</html>
