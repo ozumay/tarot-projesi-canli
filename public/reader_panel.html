@@ -138,16 +138,6 @@
             color: #000080 !important; /* Lacivert */
             font-weight: bold !important;
         }
-        
-        /* YENİ OTURUM BAŞLADI YAZI BOYUTU DÜZELTMESİ */
-        #sessionStatus { 
-            background: #543A23; 
-            color: #F7F7F7; 
-            padding: 10px; 
-            border-radius: 4px;
-            font-size: 0.8em; /* 3 font küçültüldü varsayımı ile (0.8em) */
-        }
-
 
         /* Mobil Uyum */
         @media (max-width: 1000px) {
@@ -160,6 +150,13 @@
         }
 
         /* KART STİLLERİ */
+        .session-info { 
+            background: #543A23; 
+            color: #F7F7F7; 
+            padding: 10px; 
+            border-radius: 4px;
+            font-size: 0.8em; /* Küçültülmüş boyut */
+        }
         .card-item { background: rgba(255, 255, 255, 0.95); color: #333333; padding: 15px; border-left: 5px solid #C8A375; border-radius: 4px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.2); display: flex; flex-direction: column; align-items: center; text-align: center; min-height: 450px; position: relative; }
         .card-image { width: 100px; height: auto; margin-right: 0; border-radius: 4px; box-shadow: 0 0 5px rgba(0, 0, 0, 0.5); }
         .card-image.reversed { transform: rotate(180deg); opacity: 0.8; }
@@ -413,7 +410,7 @@
             const cardClass = (data.position.includes("Ters")) ? 'reversed' : '';
             const cardTitle = `#${data.selectionCount}. ${data.cardName}`;
             
-            // VURGU MANTIĞI: Orijinal pozisyona göre vurgu yapılır.
+            // DÜZELTİLMİŞ VURGU MANTIĞI: Orijinal pozisyona göre vurgu yapılır.
             let positiveHighlightClass = '';
             let negativeHighlightClass = '';
 
