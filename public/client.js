@@ -1,6 +1,10 @@
 // Dosya Adı: client.js (Müşteri Uygulaması Mantığı)
 
-const socket = io();
+// RENDER UYUMU İÇİN DÜZELTME: Socket.IO bağlantısının HTTPS/WSS protokollerini doğru kullanmasını sağlar.
+const renderUrl = window.location.protocol + '//' + window.location.host;
+const socket = io(renderUrl, {
+    transports: ['websocket', 'polling', 'flashsocket']
+}); 
 
 // --- DOM Elementleri ---
 const authScreen = document.getElementById('auth-screen');
@@ -53,12 +57,16 @@ async function handleAuth(url, body) {
     }
 }
 
-document.getElementById('login-form').addEventListener('submit', (e) => {
-    e.preventDefault();
-    const email = document.getElementById('login-email').value;
-    const password = document.getElementById('login-password').value;
-    handleAuth('/login', { email, password });
-});
+// index.html'deki form dinleyicileri
+if (document.getElementById('login-form')) {
+    document.getElementById('login-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const email = document.getElementById('login-email').value;
+        const password = document.getElementById('login-password').value;
+        handleAuth('/login', { email, password });
+    });
+}
+// Kayıt formu varsa (index.html'e eklenmediği varsayılıyor, sadece login var)
 
 document.getElementById('logout-button').addEventListener('click', () => {
     userToken = null;
@@ -66,9 +74,12 @@ document.getElementById('logout-button').addEventListener('click', () => {
     selectionsAllowed = false;
     selectedCards = [];
     
+    // Tüm ekranları sıfırla
     authScreen.classList.remove('hidden');
     selectionScreen.classList.add('hidden');
     waitingScreen.classList.add('hidden');
+    
+    // Yönlendirme sonrası mesaj
     authMessage.textContent = 'Başarıyla çıkış yapıldı.';
     authMessage.style.color = 'green';
 });
@@ -141,6 +152,11 @@ socket.on('auth_success', (data) => {
 
         setupDeck();
         selectedCards = [];
+        
+        // Hoşgeldin mesajını güncelleyelim (index.html'deki placeholder'ı kullanıyor)
+        if (data.name && data.surname) {
+            welcomeMessage.textContent = `Merhaba, ${data.name} ${data.surname}`;
+        }
     }
 });
 
