@@ -2,11 +2,14 @@
 const express = require('express');
 const app = express();
 const http = require('http').createServer(app);
+
+// KRİTİK EKLEME: Dosya yollarını (HTML dosyaları için) yönetmek için 'path' modülü
 const path = require('path'); 
 
 // Socket.IO YAPILANDIRMASI: CORS sorununu çözmek için eklendi
 const io = require('socket.io')(http, {
     cors: {
+        // Render gibi farklı alan adlarından gelen bağlantılara izin verir
         origin: "*", 
         methods: ["GET", "POST"]
     }
@@ -20,7 +23,7 @@ const PORT = process.env.PORT || 3000;
 
 app.use(express.static('public')); 
 app.use(bodyParser.json()); 
-app.use(cors()); 
+app.use(cors()); // Genel HTTP CORS izni
 
 // E-posta ve Telefon Numarası Format Kontrolü (Müşteri kayıtları için)
 const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -55,7 +58,7 @@ activeSessions[READER_CREDENTIALS.sessionToken] = READER_CREDENTIALS.email;
 
 // ----------------------------------------------------
 // 78 TAROT KARTININ YENİ DETAYLI (10 KATEGORİLİ) ANLAMLARI
-// !!! TÜM 78 KART BURADADIR !!!
+// (TAM 78 KART VERİSİ BURADADIR)
 const TAROT_CARD_DATA = [
     // ID 1: DELİ (The Fool)
     {
@@ -230,31 +233,31 @@ const TAROT_CARD_DATA = [
     // ID 8: SAVAŞ ARABASI (The Chariot)
     { name: "Savaş Arabası", upright: { positive: "Başarı, Disiplin, Engelleri Aşma", negative: "Kontrolsüzlük, Hırs, Acelecilik, Yön Kaybı", role: "Zafer Kazanıcı, Yol Gösterici", emotion: "Kararlılık, Kontrol, Zafer Hissi", situation: "Hedefe Ulaşma, Disiplinli İlerleme", number_rep: "VII (7) / İrade, Kontrol", archetype: "Kararlılık", energy: "Verici (Yang), Hedef Odaklı", person_rep: "Kararlı Lider, Disiplinli Çalışan, Başarılı Sporcu", astrology: "Yengeç burcu (Duygusal Kontrol)" }, reversed: { positive: "Kontrolü Yeniden Kazanma, Yön Belirleme", negative: "Başarısız Girişimler, Hedef Kaybı", role: "Kararsız, Disiplinsiz", emotion: "Kontrol Kaybı, Hüsran, Dağınıklık", situation: "Yönsüzlük, Başarısızlık Riski", number_rep: "VII (7) / Kontrol Kaybı", archetype: "Dağınıklık", energy: "Dengesiz Yang", person_rep: "Kararsız Erkek Kardeş, Engellere Yenik Düşen Kişi", astrology: "Yengeç burcunun Gölgesi" } },
     // ID 9: GÜÇ (Strength)
-    { name: "Güç", upright: { positive: "Sabır, Cesaret, İçsel Denge, Şefkatli Güç", negative: "Korkulara Yenilme, Öfke Kontrolsüzlüğü, Sabırsızlık", role: "Cesur Lider, Şefkatli Güç", emotion: "Cesaret, Şefkat, İçsel Denge", situation: "İçsel Güçle Engelleri Aşma, Cesaret Gerektiren Durumlar", number_rep: "VIII (8) / Cesaret, Denge", archetype: "Kişisel Güç", energy: "Verici (Yang), Cesur", person_rep: "Merhametli Patron, İradesi Güçlü Birey, Cesur Yakın Arkadaş", astrology: "Aslan burcu (Güç, Liderlik)" }, reversed: { positive: "Korkuları Fark Edip Dönüştürme, Sabrı Kazanma", negative: "Öfke, Sabırsızlık, Kontrolsüz Güç Kullanımı", role: "Kararsız, Güçsüz", emotion: "Korku, Öfke, Sabırsızlık", situation: "Korkularla Yüzleşememe, Güç Kaybı", number_rep: "VIII (8) / Güçsüzlük", archetype: "Korku, Sabırsızlık", energy: "Dengesiz Yang", person_rep: "Kararsız, Öfkeli Ebeveyn, Gücünü Kötüye Kullanan Amir", astrology: "Aslan burcunun Gölgesi" } },
+    { name: "Güç", upright: { positive: "Sabır, Cesaret, İçsel Denge, Şefkatli Güç", negative: "Korkulara Yenilme, Öfke Kontrolsüzlüğü, Sabırsızlık", role: "Cesur Lider, Şefkatli Güç", emotion: "Cesaret, Şefkat, İçsel Denge", situation: "İçsel Güçle Engelleri Aşma, Cesaret Gerektiren Durumlar", number_rep: "VIII (8) / Cesaret, Denge", archetype: "Kişisel Güç", energy: "Verici (Yang)", person_rep: "Merhametli Patron, İradesi Güçlü Birey, Cesur Yakın Arkadaş", astrology: "Aslan burcu (Güç, Liderlik)" }, reversed: { positive: "Korkuları Fark Edip Dönüştürme, Sabrı Kazanma", negative: "Öfke, Sabırsızlık, Kontrolsüz Güç Kullanımı", role: "Kararsız, Güçsüz", emotion: "Korku, Öfke, Sabırsızlık", situation: "Korkularla Yüzleşememe, Güç Kaybı", number_rep: "VIII (8) / Güçsüzlük", archetype: "Korku, Sabırsızlık", energy: "Dengesiz Yang", person_rep: "Kararsız, Öfkeli Ebeveyn, Gücünü Kötüye Kullanan Amir", astrology: "Aslan burcunun Gölgesi" } },
     // ID 10: MÜNZEVİ (The Hermit)
-    { name: "Münzevi", upright: { positive: "İçsel Bilgelik, Rehberlik, Derin Düşünce", negative: "İzolasyon, Yalnızlık Hissi, Sosyal Kopukluk", role: "Bilge, Rehber, Yalnız Keşifçi", emotion: "Huzur, Bilgelik, Düşüncelilik", situation: "Ruhsal Arayış, İç Sesle İletişim, Yalnız Düşünme", number_rep: "IX (9) / Bilgelik, Yalnızlık", archetype: "İç Gözlem", energy: "Alıcı (Yin), Sessiz", person_rep: "Filozof, Düşünceli Amca, Ruhani Rehber", astrology: "Başak burcu (Analiz, Akıl)" }, reversed: { positive: "Yalnızlığın Bilgelik Yoluna Dönüştürülmesi", negative: "Sosyal Kopukluk, Aşırı İçe Kapanma", role: "İzole, Karamsar", emotion: "Yalnızlık, İzolasyon, Karamsarlık", situation: "Yalnızlık Krizleri, Rehbersiz İlerleme", number_rep: "IX (9) / İzolasyon", archetype: "İçe Kapanma", energy: "Dengesiz Yin", person_rep: "İzole Edilmiş Akraba, Karamsar İş Arkadaşı, Rehberlikten Yoksun Kişi", astrology: "Başak burcunun Gölgesi" } },
+    { name: "Münzevi", upright: { positive: "İçsel Bilgelik, Rehberlik, Derin Düşünce", negative: "İzolasyon, Yalnızlık Hissi, Sosyal Kopukluk", role: "Bilge, Rehber, Yalnız Keşifçi", emotion: "Huzur, Bilgelik, Düşüncelilik", situation: "Ruhsal Arayış, İç Sesle İletişim, Yalnız Düşünme", number_rep: "IX (9) / Bilgelik, Yalnızlık", archetype: "İç Gözlem", energy: "Alıcı (Yin)", person_rep: "Filozof, Düşünceli Amca, Ruhani Rehber", astrology: "Başak burcu (Analiz, Akıl)" }, reversed: { positive: "Yalnızlığın Bilgelik Yoluna Dönüştürülmesi", negative: "Sosyal Kopukluk, Aşırı İçe Kapanma", role: "İzole, Karamsar", emotion: "Yalnızlık, İzolasyon, Karamsarlık", situation: "Yalnızlık Krizleri, Rehbersiz İlerleme", number_rep: "IX (9) / İzolasyon", archetype: "İçe Kapanma", energy: "Dengesiz Yin", person_rep: "İzole Edilmiş Akraba, Karamsar İş Arkadaşı, Rehberlikten Yoksun Kişi", astrology: "Başak burcunun Gölgesi" } },
     // ID 11: KADER ÇARKI (The Wheel of Fortune)
-    { name: "Kader Çarkı", upright: { positive: "Şans, Fırsatlar, Dönüşüm, Akışa Uyum", negative: "Kontrolsüz Değişim, Beklenmedik Kayıplar", role: "Değişim Yaratıcısı, Fırsatları Değerlendiren", emotion: "Umut, Heyecan, Esneklik", situation: "Döngü Değişimleri, Kadersel Dönüşüm", number_rep: "X (10) / Döngü, Değişim", archetype: "Kader", energy: "Verici (Yang), Hareket", person_rep: "Şanslı Birey, Esnek Arkadaş, Fırsatları Kovalayan Ortak", astrology: "Jüpiter (Şans, Fırsat)" }, reversed: { positive: "Değişimden Ders Alma, Esneklik Kazanma", negative: "Kaybedilen Fırsatlar, Ters Giden Planlar, Beklenmedik Krizler", role: "Kontrolsüz, Akışa Direnç Gösteren", emotion: "Kontrolsüzlük, Şanssızlık, Hayal Kırıklığı", situation: "Şanssızlık, Kontrol Edilemeyen Olaylar", number_rep: "X (10) / Olumsuzluk", archetype: "Kaderin Gölgesi", energy: "Dengesiz Yang", person_rep: "Esnek Olmayan Patron, Değişimle Başa Çıkamayan Akraba", astrology: "Jüpiter’in Gölgesi" } },
+    { name: "Kader Çarkı", upright: { positive: "Şans, Fırsatlar, Dönüşüm, Akışa Uyum", negative: "Kontrolsüz Değişim, Beklenmedik Kayıplar", role: "Değişim Yaratıcısı, Fırsatları Değerlendiren", emotion: "Umut, Heyecan, Esneklik", situation: "Döngü Değişimleri, Kadersel Dönüşüm", number_rep: "X (10) / Döngü, Değişim", archetype: "Kader", energy: "Verici (Yang)", person_rep: "Şanslı Birey, Esnek Arkadaş, Fırsatları Kovalayan Ortak", astrology: "Jüpiter (Şans, Fırsat)" }, reversed: { positive: "Değişimden Ders Alma, Esneklik Kazanma", negative: "Kaybedilen Fırsatlar, Ters Giden Planlar, Beklenmedik Krizler", role: "Kontrolsüz, Akışa Direnç Gösteren", emotion: "Kontrolsüzlük, Şanssızlık, Hayal Kırıklığı", situation: "Şanssızlık, Kontrol Edilemeyen Olaylar", number_rep: "X (10) / Olumsuzluk", archetype: "Kaderin Gölgesi", energy: "Dengesiz Yang", person_rep: "Esnek Olmayan Patron, Değişimle Başa Çıkamayan Akraba", astrology: "Jüpiter’in Gölgesi" } },
     // ID 12: ADALET (Justice)
-    { name: "Adalet", upright: { positive: "Objektiflik, Doğruluk, Adaletin Sağlanması", negative: "Tarafsızlığı Kaybetme, Haksız Kararlar, Adaletin Gecikmesi", role: "Hakem, Yargıç, Adil Lider", emotion: "Objektiflik, Sorumluluk, Denge", situation: "Karar Alma, Sorumluluk Alma, Adil Çözüm Arayışı", number_rep: "XI (11) / Denge, Karar", archetype: "Ahlaki Farkındalık", energy: "Verici (Yang), Dengeli", person_rep: "Avukat, Hukukçu, Yargıç, Adil Arkadaş", astrology: "Terazi burcu (Denge, Adalet)" }, reversed: { positive: "Hataları Fark Etme, Sorumluluk Alma", negative: "Adaletsizlik, Yanlış Kararlar, Taraflılık", role: "Taraflı, Haksız, Sorumsuz", emotion: "Öfke, Haksızlık Hissi, Pişmanlık", situation: "Haksızlık, Adalet Arayışında Zorluk", number_rep: "XI (11) / Adaletsizlik", archetype: "Taraflılık", energy: "Dengesiz Yang", person_rep: "Taraflı Patron, Sorumsuz Amca, Rüşvetçi Yetkili", astrology: "Terazi burcunun Gölgesi" } },
+    { name: "Adalet", upright: { positive: "Objektiflik, Doğruluk, Adaletin Sağlanması", negative: "Tarafsızlığı Kaybetme, Haksız Kararlar, Adaletin Gecikmesi", role: "Hakem, Yargıç, Adil Lider", emotion: "Objektiflik, Sorumluluk, Denge", situation: "Karar Alma, Sorumluluk Alma, Adil Çözüm Arayışı", number_rep: "XI (11) / Denge, Karar", archetype: "Ahlaki Farkındalık", energy: "Verici (Yang)", person_rep: "Avukat, Hukukçu, Yargıç, Adil Arkadaş", astrology: "Terazi burcu (Denge, Adalet)" }, reversed: { positive: "Hataları Fark Etme, Sorumluluk Alma", negative: "Adaletsizlik, Yanlış Kararlar, Taraflılık", role: "Taraflı, Haksız, Sorumsuz", emotion: "Öfke, Haksızlık Hissi, Pişmanlık", situation: "Haksızlık, Adalet Arayışında Zorluk", number_rep: "XI (11) / Adaletsizlik", archetype: "Taraflılık", energy: "Dengesiz Yang", person_rep: "Taraflı Patron, Sorumsuz Amca, Rüşvetçi Yetkili", astrology: "Terazi burcunun Gölgesi" } },
     // ID 13: ASILAN ADAM (The Hanged Man)
-    { name: "Asılan Adam", upright: { positive: "Sabır, Farkındalık, Yeni Perspektif", negative: "Durumu Kabullenememe, Pasiflik, Hareketsizlik", role: "Gözlemci, Fedakar, Ruhsal Yolcu", emotion: "Teslimiyet, Sabır, Huzur", situation: "Bekleme, Duraklama, İçsel Dönüşüm", number_rep: "XII (12) / Teslimiyet", archetype: "Farkındalık", energy: "Alıcı (Yin), Sabırlı", person_rep: "Fedakar Aile Üyesi, Düşünceli Danışman, Bekleyen Kurban", astrology: "Balık burcu (Teslimiyet)" }, reversed: { positive: "Sabrı Öğrenme, Durumu Yeniden Değerlendirme", negative: "Aceleci Davranış, Direnç, Hatalı Kararlar", role: "Sabırsız, Dirençli", emotion: "Sabırsızlık, Direnç, Acele", situation: "Sabırsızlık, Yanlış Değerlendirme", number_rep: "XII (12) / Direnç", archetype: "Sabırsızlık", energy: "Dengesiz Yin, Acelecilik", person_rep: "Sabırsız Erkek Kardeş, Dirençli Patron", astrology: "Balık burcunun Gölgesi" } },
+    { name: "Asılan Adam", upright: { positive: "Sabır, Farkındalık, Yeni Perspektif", negative: "Durumu Kabullenememe, Pasiflik, Hareketsizlik", role: "Gözlemci, Fedakar, Ruhsal Yolcu", emotion: "Teslimiyet, Sabır, Huzur", situation: "Bekleme, Duraklama, İçsel Dönüşüm", number_rep: "XII (12) / Teslimiyet", archetype: "Farkındalık", energy: "Alıcı (Yin)", person_rep: "Fedakar Aile Üyesi, Düşünceli Danışman, Bekleyen Kurban", astrology: "Balık burcu (Teslimiyet)" }, reversed: { positive: "Sabrı Öğrenme, Durumu Yeniden Değerlendirme", negative: "Aceleci Davranış, Direnç, Hatalı Kararlar", role: "Sabırsız, Dirençli", emotion: "Sabırsızlık, Direnç, Acele", situation: "Sabırsızlık, Yanlış Değerlendirme", number_rep: "XII (12) / Direnç", archetype: "Sabırsızlık", energy: "Dengesiz Yin", person_rep: "Sabırsız Erkek Kardeş, Dirençli Patron", astrology: "Balık burcunun Gölgesi" } },
     // ID 14: ÖLÜM (Death)
-    { name: "Ölüm", upright: { positive: "Yenilenme, Arınma, Eskiye Bırakıp Yeniye Geçiş", negative: "Direnç, Kayıp Korkusu, Bitişleri Kabullenememe", role: "Dönüşüm Ajanı, Değişim Rehberi", emotion: "Kabul, Özgürleşme, Huzur", situation: "Hayat Döngüsünde Değişim, Sonlar ve Yeni Başlangıçlar", number_rep: "XIII (13) / Dönüşüm", archetype: "Yeniden Doğuş", energy: "Alıcı (Yin), Derin Enerji", person_rep: "Değişimi Kabul Eden, Hayat Döngüsünü Bitiren Birey", astrology: "Akrep burcu (Plüton Etkisi)" }, reversed: { positive: "Direnç Farkındalığı, Kurtulma Fırsatı", negative: "Değişime Direnç, Kayıpları Kabullenememe", role: "Değişime Direnç Gösteren", emotion: "Korku, Direnç, Tıkanıklık", situation: "Dirençli Değişimler, Dönüşümü Geciktirme", number_rep: "XIII (13) / Direnç", archetype: "Dönüşüm Korkusu", energy: "Dengesiz Yin, Dirençli", person_rep: "Eski Alışkanlıklara Bağlı Ebeveyn, Değişime Kapalı İş Arkadaşı", astrology: "Akrep burcunun Gölgesi" } },
+    { name: "Ölüm", upright: { positive: "Yenilenme, Arınma, Eskiye Bırakıp Yeniye Geçiş", negative: "Direnç, Kayıp Korkusu, Bitişleri Kabullenememe", role: "Dönüşüm Ajanı, Değişim Rehberi", emotion: "Kabul, Özgürleşme, Huzur", situation: "Hayat Döngüsünde Değişim, Sonlar ve Yeni Başlangıçlar", number_rep: "XIII (13) / Dönüşüm", archetype: "Yeniden Doğuş", energy: "Alıcı (Yin)", person_rep: "Değişimi Kabul Eden, Hayat Döngüsünü Bitiren Birey", astrology: "Akrep burcu (Plüton Etkisi)" }, reversed: { positive: "Direnç Farkındalığı, Kurtulma Fırsatı", negative: "Değişime Direnç, Kayıpları Kabullenememe", role: "Değişime Direnç Gösteren", emotion: "Korku, Direnç, Tıkanıklık", situation: "Dirençli Değişimler, Dönüşümü Geciktirme", number_rep: "XIII (13) / Direnç", archetype: "Dönüşüm Korkusu", energy: "Dengesiz Yin", person_rep: "Eski Alışkanlıklara Bağlı Ebeveyn, Değişime Kapalı İş Arkadaşı", astrology: "Akrep burcunun Gölgesi" } },
     // ID 15: DENGE (Temperance)
-    { name: "Denge", upright: { positive: "Sabır, Uyum, Ölçülülük, İş Birliği", negative: "Aşırılıklar, Sabırsızlık, Dengesizlik", role: "Arabulucu, Denge Getiren", emotion: "Huzur, Ölçülülük, Uyum", situation: "Denge Arayışı, Sabır Gerektiren Süreçler", number_rep: "XIV (14) / Uyum, Ölçülülük", archetype: "Bütünleşme", energy: "Alıcı-Verici (Yin-Yang), Uyumlu", person_rep: "Arabulucu, Sabırlı Arkadaş, Ölçülü Yönetici", astrology: "Yay burcu (Genişleme, Optimizm)" }, reversed: { positive: "Dengesizliği Fark Etme, Uyum Sağlama Fırsatı", negative: "Aşırılıklar, Sabırsızlık, Çatışmalar", role: "Uyum Sağlayamayan, Aşırı Tepki Veren", emotion: "Sabırsızlık, Aşırılık, Çatışma", situation: "Dengesiz İlişkiler, Uyumsuz Süreçler", number_rep: "XIV (14) / Dengesizlik", archetype: "Aşırılık", energy: "Dengesiz Yin-Yang", person_rep: "Uyum Sağlayamayan Partner, Sabırsız Patron", astrology: "Yay burcunun Gölgesi" } },
+    { name: "Denge", upright: { positive: "Sabır, Uyum, Ölçülülük, İş Birliği", negative: "Aşırılıklar, Sabırsızlık, Dengesizlik", role: "Arabulucu, Denge Getiren", emotion: "Huzur, Ölçülülük, Uyum", situation: "Denge Arayışı, Sabır Gerektiren Süreçler", number_rep: "XIV (14) / Uyum, Ölçülülük", archetype: "Bütünleşme", energy: "Alıcı-Verici (Yin-Yang)", person_rep: "Arabulucu, Sabırlı Arkadaş, Ölçülü Yönetici", astrology: "Yay burcu (Genişleme, Optimizm)" }, reversed: { positive: "Dengesizliği Fark Etme, Uyum Sağlama Fırsatı", negative: "Aşırılıklar, Sabırsızlık, Çatışmalar", role: "Uyum Sağlayamayan, Aşırı Tepki Veren", emotion: "Sabırsızlık, Aşırılık, Çatışma", situation: "Dengesiz İlişkiler, Uyumsuz Süreçler", number_rep: "XIV (14) / Dengesizlik", archetype: "Aşırılık", energy: "Dengesiz Yin-Yang", person_rep: "Uyum Sağlayamayan Partner, Sabırsız Patron", astrology: "Yay burcunun Gölgesi" } },
     // ID 16: ŞEYTAN (The Devil)
-    { name: "Şeytan", upright: { positive: "Gölge Yönleri Fark Etme, Sınırları Belirleme", negative: "Bağımlılık, Aşırı Tutkular, Kontrol Kaybı", role: "Bağımlı, Sınırları Zorlayan", emotion: "Arzu, Kısıtlama, Utanç", situation: "Bağımlılık Krizleri, Arzuların Güçlenmesi", number_rep: "XV (15) / Bağımlılık, Arzu", archetype: "Gölge Benlik", energy: "Verici (Yang), Yoğun Arzu", person_rep: "Bağımlı Akraba, Kontrolcü Partner, Saplantılı Düşman", astrology: "Oğlak burcu (Satürn Etkisi)" }, reversed: { positive: "Özgürleşme, Bilinçli Seçimler", negative: "Geçmiş Bağımlılıkların Etkisi, Yüzleşme Gerekliliği", role: "Özgürleşen, Kontrol Edebilen", emotion: "Özgürleşme, Bilinç, Güç", situation: "Özgürleşme Süreçleri, Kontrol Kazanma", number_rep: "XV (15) / Özgürleşme", archetype: "Bilinçli Seçim", energy: "Dengesiz Yang, Serbestleşme", person_rep: "Özgürleşmiş Birey, Kontrolü Kazanmış Akraba", astrology: "Oğlak burcunun Gölgesi" } },
+    { name: "Şeytan", upright: { positive: "Gölge Yönleri Fark Etme, Sınırları Belirleme", negative: "Bağımlılık, Aşırı Tutkular, Kontrol Kaybı", role: "Bağımlı, Sınırları Zorlayan", emotion: "Arzu, Kısıtlama, Utanç", situation: "Bağımlılık Krizleri, Arzuların Güçlenmesi", number_rep: "XV (15) / Bağımlılık, Arzu", archetype: "Gölge Benlik", energy: "Verici (Yang)", person_rep: "Bağımlı Akraba, Kontrolcü Partner, Saplantılı Düşman", astrology: "Oğlak burcu (Satürn Etkisi)" }, reversed: { positive: "Özgürleşme, Bilinçli Seçimler", negative: "Geçmiş Bağımlılıkların Etkisi, Yüzleşme Gerekliliği", role: "Özgürleşen, Kontrol Edebilen", emotion: "Özgürleşme, Bilinç, Güç", situation: "Özgürleşme Süreçleri, Kontrol Kazanma", number_rep: "XV (15) / Özgürleşme", archetype: "Bilinçli Seçim", energy: "Dengesiz Yang", person_rep: "Özgürleşmiş Birey, Kontrolü Kazanmış Akraba", astrology: "Oğlak burcunun Gölgesi" } },
     // ID 17: KULE (The Tower)
-    { name: "Kule", upright: { positive: "Yenilenme, Farkındalık, Temiz Başlangıçlar", negative: "Ani Krizler, Kayıplar, Yıkım, Kontrol Kaybı", role: "Yıkıcı, Sarsıcı, Uyanış Getiren", emotion: "Şok, Korku, Farkındalık", situation: "Beklenmedik Değişimler, Eski Düzenin Çöküşü", number_rep: "XVI (16) / Yıkım, Kriz", archetype: "Ani Değişim", energy: "Verici (Yang), Yıkıcı", person_rep: "Değişime Zorlanan, Uyanışa Açık Birey, Sarsıcı Olay Yaratıcısı", astrology: "Mars ve Kova (Devrim)" }, reversed: { positive: "Krizleri Önleme, Kontrollü Dönüşüm", negative: "Değişime Direnç, Eski Yapıları Bırakmama", role: "Önlem Alan, Kontrollü Yöneten", emotion: "Direnç, Tıkanıklık, Korku", situation: "Krizlerin Ertelenmesi, Engellenmiş Uyanış", number_rep: "XVI (16) / Önleme", archetype: "Direnç", energy: "Dengesiz Yang", person_rep: "Kontrollü, Değişimle Temkinli Başa Çıkan Akraba", astrology: "Kova burcunun Gölgesi" } },
+    { name: "Kule", upright: { positive: "Yenilenme, Farkındalık, Temiz Başlangıçlar", negative: "Ani Krizler, Kayıplar, Yıkım, Kontrol Kaybı", role: "Yıkıcı, Sarsıcı, Uyanış Getiren", emotion: "Şok, Korku, Farkındalık", situation: "Beklenmedik Değişimler, Eski Düzenin Çöküşü", number_rep: "XVI (16) / Yıkım, Kriz", archetype: "Ani Değişim", energy: "Verici (Yang)", person_rep: "Değişime Zorlanan, Uyanışa Açık Birey, Sarsıcı Olay Yaratıcısı", astrology: "Mars ve Kova (Devrim)" }, reversed: { positive: "Krizleri Önleme, Kontrollü Dönüşüm", negative: "Değişime Direnç, Eski Yapıları Bırakmama", role: "Önlem Alan, Kontrollü Yöneten", emotion: "Direnç, Tıkanıklık, Korku", situation: "Krizlerin Ertelenmesi, Engellenmiş Uyanış", number_rep: "XVI (16) / Önleme", archetype: "Direnç", energy: "Dengesiz Yang", person_rep: "Kontrollü, Değişimle Temkinli Başa Çıkan Akraba", astrology: "Kova burcunun Gölgesi" } },
     // ID 18: YILDIZ (The Star)
-    { name: "Yıldız", upright: { positive: "Umut, Yenilenme, Ruhsal Şifa, Rehberlik", negative: "Umutsuzluk, İlham Eksikliği, Hedef Kaybı", role: "Rehber, İlham Veren", emotion: "Umut, İlham, Huzur", situation: "İyileşme, Umut, Yeni Fırsatlar", number_rep: "XVII (17) / Umut, İlham", archetype: "Ruhsal İyileşme", energy: "Alıcı (Yin), Sakin", person_rep: "Pozitif Arkadaş, İyileştirici, Ruhsal Öğretmen", astrology: "Kova burcu (Yenilik, İlham)" }, reversed: { positive: "Umutsuzluktan Ders Alma, İçsel Rehberlik Kazanma", negative: "Motivasyon Kaybı, Hedefleri Kaybetme", role: "Umutsuz, Rehbersiz", emotion: "Umutsuzluk, Karamsarlık, Motivasyon Kaybı", situation: "Karamsarlık, İlham Eksikliği", number_rep: "XVII (17) / Motivasyon Kaybı", archetype: "Umutsuzluk", energy: "Dengesiz Yin", person_rep: "Umutsuz, Rehbersiz, Karamsar İş Arkadaşı", astrology: "Kova burcunun Gölgesi" } },
+    { name: "Yıldız", upright: { positive: "Umut, Yenilenme, Ruhsal Şifa, Rehberlik", negative: "Umutsuzluk, İlham Eksikliği, Hedef Kaybı", role: "Rehber, İlham Veren", emotion: "Umut, İlham, Huzur", situation: "İyileşme, Umut, Yeni Fırsatlar", number_rep: "XVII (17) / Umut, İlham", archetype: "Ruhsal İyileşme", energy: "Alıcı (Yin)", person_rep: "Pozitif Arkadaş, İyileştirici, Ruhsal Öğretmen", astrology: "Kova burcu (Yenilik, İlham)" }, reversed: { positive: "Umutsuzluktan Ders Alma, İçsel Rehberlik Kazanma", negative: "Motivasyon Kaybı, Hedefleri Kaybetme", role: "Umutsuz, Rehbersiz", emotion: "Umutsuzluk, Karamsarlık, Motivasyon Kaybı", situation: "Karamsarlık, İlham Eksikliği", number_rep: "XVII (17) / Motivasyon Kaybı", archetype: "Umutsuzluk", energy: "Dengesiz Yin", person_rep: "Umutsuz, Rehbersiz, Karamsar İş Arkadaşı", astrology: "Kova burcunun Gölgesi" } },
     // ID 19: AY (The Moon)
-    { name: "Ay", upright: { positive: "Sezgi, Hayal Gücü, Gizemleri Çözme", negative: "Yanılsamalar, Belirsizlik, Kafa Karışıklığı, Korkular", role: "Sezgisel Rehber", emotion: "Sezgi, Belirsizlik, Gizem", situation: "Sezgisel Deneyimler, Gizemli Durumlar", number_rep: "XVIII (18) / Bilinçaltı, Gizem", archetype: "İllüzyon", energy: "Alıcı (Yin), Sezgisel", person_rep: "Sezgisel Birey, Gizemli Arkadaş, Hayal Gücü Yüksek Çocuk", astrology: "Balık burcu (Neptün Etkisi)" }, reversed: { positive: "Yanılsamaları Fark Etme, Sezgiyi Yeniden Geliştirme", negative: "Yanılsamalar, Korkular, Yanlış Yönlendirmeler", role: "Sezgiden Kopuk, Yanılsamalara Kapılan", emotion: "Kafa Karışıklığı, Korku, Paranoya", situation: "Sezgisel Krizler, Belirsizlik", number_rep: "XVIII (18) / Yanılsamalar", archetype: "Kafa Karışıklığı", energy: "Dengesiz Yin", person_rep: "Yanılsamalara Kapılan, Paranoyak Düşman, Kararsız Akraba", astrology: "Balık burcunun Gölgesi" } },
+    { name: "Ay", upright: { positive: "Sezgi, Hayal Gücü, Gizemleri Çözme", negative: "Yanılsamalar, Belirsizlik, Kafa Karışıklığı, Korkular", role: "Sezgisel Rehber", emotion: "Sezgi, Belirsizlik, Gizem", situation: "Sezgisel Deneyimler, Gizemli Durumlar", number_rep: "XVIII (18) / Bilinçaltı, Gizem", archetype: "İllüzyon", energy: "Alıcı (Yin)", person_rep: "Sezgisel Birey, Gizemli Arkadaş, Hayal Gücü Yüksek Çocuk", astrology: "Balık burcu (Neptün Etkisi)" }, reversed: { positive: "Yanılsamaları Fark Etme, Sezgiyi Yeniden Geliştirme", negative: "Yanılsamalar, Korkular, Yanlış Yönlendirmeler", role: "Sezgiden Kopuk, Yanılsamalara Kapılan", emotion: "Kafa Karışıklığı, Korku, Paranoya", situation: "Sezgisel Krizler, Belirsizlik", number_rep: "XVIII (18) / Yanılsamalar", archetype: "Kafa Karışıklığı", energy: "Dengesiz Yin", person_rep: "Yanılsamalara Kapılan, Paranoyak Düşman, Kararsız Akraba", astrology: "Balık burcunun Gölgesi" } },
     // ID 20: GÜNEŞ (The Sun)
-    { name: "Güneş", upright: { positive: "Başarı, Mutluluk, Netlik, Pozitif Enerji", negative: "Aşırı İyimserlik, Gurur veya Rehavete Kapılma", role: "Lider, İlham Kaynağı", emotion: "Neşe, Canlılık, Güven", situation: "Başarı, Açıklık, Coşku", number_rep: "XIX (19) / Mutluluk, Enerji", archetype: "Canlılık", energy: "Verici (Yang), Pozitif", person_rep: "Enerjik Patron, Başarılı Çocuk, Neşeli Arkadaş", astrology: "Güneş burcu (Liderlik)" }, reversed: { positive: "Eksik Yönleri Fark Etme, Netlik Kazanma", negative: "Motivasyon Kaybı, Başarısızlık, Rehavet", role: "Motive Olamayan", emotion: "Rehavet, Gecikme, Motivasyon Kaybı", situation: "Gecikmiş Başarılar, Enerji Düşüklüğü", number_rep: "XIX (19) / Gecikme", archetype: "Rehavet", energy: "Dengesiz Yang", person_rep: "Motivasyonu Düşük İş Arkadaşı, Rehavete Kapılmış Kuzen", astrology: "Güneş burcunun Gölgesi" } },
+    { name: "Güneş", upright: { positive: "Başarı, Mutluluk, Netlik, Pozitif Enerji", negative: "Aşırı İyimserlik, Gurur veya Rehavete Kapılma", role: "Lider, İlham Kaynağı", emotion: "Neşe, Canlılık, Güven", situation: "Başarı, Açıklık, Coşku", number_rep: "XIX (19) / Mutluluk, Enerji", archetype: "Canlılık", energy: "Verici (Yang)", person_rep: "Enerjik Patron, Başarılı Çocuk, Neşeli Arkadaş", astrology: "Güneş burcu (Liderlik)" }, reversed: { positive: "Eksik Yönleri Fark Etme, Netlik Kazanma", negative: "Motivasyon Kaybı, Başarısızlık, Rehavet", role: "Motive Olamayan", emotion: "Rehavet, Gecikme, Motivasyon Kaybı", situation: "Gecikmiş Başarılar, Enerji Düşüklüğü", number_rep: "XIX (19) / Gecikme", archetype: "Rehavet", energy: "Dengesiz Yang", person_rep: "Motivasyonu Düşük İş Arkadaşı, Rehavete Kapılmış Kuzen", astrology: "Güneş burcunun Gölgesi" } },
     // ID 21: HÜKÜM (Judgement)
-    { name: "Hüküm", upright: { positive: "Yeniden Doğuş, Farkındalık, Hatalardan Ders Alma", negative: "Geçmişle Hesaplaşamama, Gecikmiş Kararlar", role: "Hesaplaşan, Yeniden Doğan", emotion: "Kabul, Muhasebe, Uyanış", situation: "Hesaplaşma, Karar Alma Süreçleri", number_rep: "XX (20) / Karar, Hesaplaşma", archetype: "Muhasebe", energy: "Verici (Yang), Uyanış", person_rep: "Sorumluluk Alan, Yeniden Doğan Birey, Bilge Yaşlı", astrology: "Pluto ve Ateş elementi" }, reversed: { positive: "Ders Çıkarma, Yeniden Doğuş Fırsatı", negative: "Hesaplaşmama, Hatalardan Ders Alamama", role: "Hesaplaşmayı Reddeden", emotion: "Pişmanlık, Reddetme, Tıkanıklık", situation: "Kaçırılan Uyanışlar, Hesaplaşma Engeli", number_rep: "XX (20) / Reddetme", archetype: "Pişmanlık", energy: "Dengesiz Yang", person_rep: "Sorumluluktan Kaçan Akraba, Hatalarından Ders Almayan İş Arkadaşı", astrology: "Pluto’nun Gölgesi" } },
+    { name: "Hüküm", upright: { positive: "Yeniden Doğuş, Farkındalık, Hatalardan Ders Alma", negative: "Geçmişle Hesaplaşamama, Gecikmiş Kararlar", role: "Hesaplaşan, Yeniden Doğan", emotion: "Kabul, Muhasebe, Uyanış", situation: "Hesaplaşma, Karar Alma Süreçleri", number_rep: "XX (20) / Karar, Hesaplaşma", archetype: "Muhasebe", energy: "Verici (Yang)", person_rep: "Sorumluluk Alan, Yeniden Doğan Birey, Bilge Yaşlı", astrology: "Pluto ve Ateş elementi" }, reversed: { positive: "Ders Çıkarma, Yeniden Doğuş Fırsatı", negative: "Hesaplaşmama, Hatalardan Ders Alamama", role: "Hesaplaşmayı Reddeden", emotion: "Pişmanlık, Reddetme, Tıkanıklık", situation: "Kaçırılan Uyanışlar, Hesaplaşma Engeli", number_rep: "XX (20) / Reddetme", archetype: "Pişmanlık", energy: "Dengesiz Yang", person_rep: "Sorumluluktan Kaçan Akraba, Hatalarından Ders Almayan İş Arkadaşı", astrology: "Pluto’nun Gölgesi" } },
     // ID 22: DÜNYA (The World)
     { name: "Dünya", upright: { positive: "Başarı, Bütünleşme, Uyum, Hedeflerin Tamamlanması", negative: "Eksik Tamamlama, Bitmemiş İşler, Uyumsuzluk", role: "Başarılı, Tamamlayıcı", emotion: "Bütünlük, Huzur, Zafer", situation: "Tamamlanma, Hedeflere Ulaşma, Döngülerin Kapanması", number_rep: "XXI (21) / Tamamlama", archetype: "Bütünlük", energy: "Alıcı-Verici (Yin-Yang)", person_rep: "Başarılı Partner, Dünyayı Dolaşan Akraba, Uyumlu Birey", astrology: "Dünya elementi ve Satürn" }, reversed: { positive: "Eksik Yönleri Fark Edip Tamamlama Fırsatı", negative: "Hedefleri Bitirememe, Uyumsuzluk, Gecikmiş Başarı", role: "Tamamlanmamış, Uyumsuz", emotion: "Eksiklik, Gecikme, Hüsran", situation: "Gecikmiş Başarı, Tamamlanmamış İşler", number_rep: "XXI (21) / Gecikme", archetype: "Eksiklik", energy: "Dengesiz Yin-Yang", person_rep: "Hedeflerini Tamamlayamayan, Uyumsuz İş Arkadaşı", astrology: "Satürn'ün Gölgesi" } },
     // ID 23: KUPA ASI
@@ -262,7 +265,7 @@ const TAROT_CARD_DATA = [
     // ID 24: KUPA İKİLİSİ (Two of Cups)
     { name: "Kupa İkilisi", upright: { positive: "Sağlıklı İlişkiler, Sevgi ve Uyum", negative: "Dengesizlik, Bağımlılık, Yanlış Anlaşılmalar", role: "Partner, Uyum Sağlayıcı", emotion: "Uyum, Karşılıklı Sevgi, Bağlılık", situation: "Ortaklıklar, Romantik/İş İlişkilerinde Uyum", number_rep: "İki / Birlik, Ortaklık", archetype: "Denge, Uyum", energy: "Alıcı-Verici (Yin-Yang)", person_rep: "Anlayışlı Partner, Destekleyici Yakın Arkadaş, İş Ortağı", astrology: "Yengeç/Boğa Etkisi" }, reversed: { positive: "Dengesizliği Fark Edip Güçlendirme", negative: "Uyumsuz İlişkiler, Kopukluk, Çatışma", role: "Partneriyle Uyumsuz", emotion: "Dengesizlik, Kopukluk, Çatışma", situation: "Çatışmalı İlişkiler, Kopukluk", number_rep: "İki / Uyumsuzluk", archetype: "Dengesizlik", energy: "Dengesiz Yin-Yang", person_rep: "Uyumsuz Partner, Bağımlı Ebeveyn", astrology: "Yengeç/Boğa Gölgesi" } },
     // ID 25: KUPA ÜÇLÜSÜ (Three of Cups)
-    { name: "Kupa Üçlüsü", upright: { positive: "Arkadaşlık, Sosyal Bağlar, Kutlama, Mutluluk Paylaşımı", negative: "Aşırı Eğlence, Sorumluluk Eksikliği, Dedikodu", role: "Arkadaş, Kutlamacı", emotion: "Neşe, Dostluk, Kutlama", situation: "Sosyal Etkinlikler, Kutlamalar", number_rep: "Üç / Kutlama, Topluluk", archetype: "Sosyal Bağ", energy: "Verici (Yang), Neşe", person_rep: "Neşeli Arkadaş Grubu, Sosyal Akraba, Düğün Organizatörü", astrology: "Yengeç/Boğa Etkisi" }, reversed: { positive: "Sosyal Bağlantıları Yeniden İnşa Etme Fırsatı", negative: "Yalnızlık, Grup Uyumsuzluğu", role: "Sosyal İzolasyon Yaşayan", emotion: "Yalnızlık, İzolasyon, Uyumsuzluk", situation: "Sosyal Kopukluk, Uyumsuz İlişkiler", number_rep: "Üç / Yalnızlık", archetype: "İzolasyon", energy: "Dengesiz Yang", person_rep: "Sosyal Bağlardan Kopuk Birey, Dedikoducu İş Arkadaşı", astrology: "Yengeç/Boğa Gölgesi" } },
+    { name: "Kupa Üçlüsü", upright: { positive: "Arkadaşlık, Sosyal Bağlar, Kutlama, Mutluluk Paylaşımı", negative: "Aşırı Eğlence, Sorumluluk Eksikliği, Dedikodu", role: "Arkadaş, Kutlamacı", emotion: "Neşe, Dostluk, Kutlama", situation: "Sosyal Etkinlikler, Kutlamalar", number_rep: "Üç / Kutlama, Topluluk", archetype: "Sosyal Bağ", energy: "Verici (Yang)", person_rep: "Neşeli Arkadaş Grubu, Sosyal Akraba, Düğün Organizatörü", astrology: "Yengeç/Boğa Etkisi" }, reversed: { positive: "Sosyal Bağlantıları Yeniden İnşa Etme Fırsatı", negative: "Yalnızlık, Grup Uyumsuzluğu", role: "Sosyal İzolasyon Yaşayan", emotion: "Yalnızlık, İzolasyon, Uyumsuzluk", situation: "Sosyal Kopukluk, Uyumsuz İlişkiler", number_rep: "Üç / Yalnızlık", archetype: "İzolasyon", energy: "Dengesiz Yang", person_rep: "Sosyal Bağlardan Kopuk Birey, Dedikoducu İş Arkadaşı", astrology: "Yengeç/Boğa Gölgesi" } },
     // ID 26: KUPA DÖRTLÜSÜ (Four of Cups)
     { name: "Kupa Dörtlüsü", upright: { positive: "İç Gözlem, Duygusal Yeniden Değerlendirme", negative: "Duygusal Tatminsizlik, Fırsatları Görmeme", role: "Düşünen, Durgun", emotion: "Bıkkınlık, Durgunluk, Memnuniyetsizlik", situation: "Duygusal Durgunluk, Fırsatları Kaçırma", number_rep: "Dört / Durağanlık", archetype: "İçe Dönüş", energy: "Alıcı (Yin)", person_rep: "Düşünceli, Pasif Birey, Fırsatları Görmeyen Akraba", astrology: "Yengeç burcu" }, reversed: { positive: "Yeni Duygusal Fırsatlar, Motivasyon", negative: "Durağanlığı Bırakma Zorunluluğu", role: "Fırsatları Gören", emotion: "Canlanma, Farkındalık, Motivasyon", situation: "Duygusal Açılım, Harekete Geçme", number_rep: "Dört / Farkındalık", archetype: "Duygusal Açılım", energy: "Dengesiz Yin", person_rep: "Farkındalığı Artmış Kişi, Harekete Geçen Arkadaş", astrology: "Yengeç burcunun Gölgesi" } },
     // ID 27: KUPA BEŞLİSİ (Five of Cups)
@@ -278,9 +281,9 @@ const TAROT_CARD_DATA = [
     // ID 32: KUPA ONLUSU (Ten of Cups)
     { name: "Kupa Onlusu", upright: { positive: "Aile Mutluluğu, Duygusal Bütünlük, Uyum ve Huzur", negative: "İdealizasyon, Uyum Eksikliği", role: "Mutlu Aile Bireyi, Duygusal Lider", emotion: "Huzur, Aile Sevgisi, Bütünlük", situation: "Aile Mutluluğu, İlişkilerde Tatmin", number_rep: "On / Tamamlanma", archetype: "Duygusal Bütünlük", energy: "Alıcı-Verici (Yin-Yang)", person_rep: "Mutlu Aile Üyesi, Huzurlu Ebeveyn, Uyumlu Partner", astrology: "Yay / Balık Etkisi" }, reversed: { positive: "Eksiklikleri Fark Edip Uyum Sağlama", negative: "Ailede Çatışma, Duygusal Tatminsizlik", role: "Tatminsiz, Uyumsuz", emotion: "Uyumsuzluk, Ailevi Hüsran, Huzursuzluk", situation: "Duygusal Boşluk, Aile Uyumsuzluğu", number_rep: "On / Eksiklik", archetype: "Uyumsuzluk", energy: "Dengesiz Yin-Yang", person_rep: "Duygusal Eksiklik Yaşayan Akraba, Uyumsuz Partner", astrology: "Yay / Balık Gölgesi" } },
     // ID 33: KUPA UŞAĞI (Page of Cups)
-    { name: "Kupa Uşağı", upright: { positive: "Yeni Duygusal Haber, Yaratıcı İlham", negative: "Duygusal Olgunlaşmama, Yüzeysellik", role: "Haberci, Öğrenci", emotion: "Merak, Duygusallık, Heyecan", situation: "Yeni Duygusal Başlangıç, Yaratıcı Fırsat", number_rep: "Uşak / Yeni Haber", archetype: "Duygu", energy: "Pasif", person_rep: "Küçük Kız/Oğlan Kardeş, Duygusal Gelişim Gösteren Genç, Yaratıcı Arkadaş", astrology: "Su Elementi" }, reversed: { positive: "İçsel Tıkanıklığı Fark Etme", negative: "Kötü Haber, Hayal Kırıklığı, Kararsızlık", role: "Olgunlaşmamış", emotion: "Hayal Kırıklığı, Kararsızlık, Olgunlaşmamışlık", situation: "Duygusal Blokaj, Yüzeysellik", number_rep: "Uşak / Tıkanıklık", archetype: "Tıkanıklık", energy: "Blokaj", person_rep: "Kararsız Genç, Olgunlaşmamış Akraba", astrology: "Su Elementinin Gölgesi" } },
+    { name: "Kupa Uşağı", upright: { positive: "Yeni Duygusal Haber, Yaratıcı İlham", negative: "Duygusal Olgunlaşmama, Yüzeysellik", role: "Haberci", emotion: "Merak, Duygusallık, Heyecan", situation: "Yeni Duygusal Başlangıç, Yaratıcı Fırsat", number_rep: "Uşak / Yeni Haber", archetype: "Duygu", energy: "Pasif", person_rep: "Küçük Kız/Oğlan Kardeş, Duygusal Gelişim Gösteren Genç, Yaratıcı Arkadaş", astrology: "Su Elementi" }, reversed: { positive: "İçsel Tıkanıklığı Fark Etme", negative: "Kötü Haber, Hayal Kırıklığı, Kararsızlık", role: "Olgunlaşmamış", emotion: "Hayal Kırıklığı, Kararsızlık, Olgunlaşmamışlık", situation: "Duygusal Blokaj, Yüzeysellik", number_rep: "Uşak / Tıkanıklık", archetype: "Tıkanıklık", energy: "Blokaj", person_rep: "Kararsız Genç, Olgunlaşmamış Akraba", astrology: "Su Elementinin Gölgesi" } },
     // ID 34: KUPA ŞÖVALYESİ (Knight of Cups)
-    { name: "Kupa Şövalyesi", upright: { positive: "Romantizm, Duygusal Girişim, İlham", negative: "Duygusal Kararsızlık, Yüzeysellik", role: "Romantik, Teklif Eden", emotion: "Aşk, Coşku, Romantizm", situation: "Romantik Teklif, Duygusal Yolculuk", number_rep: "Şövalye / Duygusal Hareket", archetype: "Romantik Girişim", energy: "Verici (Yang), Hareketli", person_rep: "Romantik Partner, Teklif Eden Erkek Arkadaş, İlham Veren İş Arkadaşı", astrology: "Akrep / Balık Etkisi" }, reversed: { positive: "Farkındalık Kazanma ve Fırsatları Değerlendirme", negative: "Hareketsizlik, Duygusal Blokaj, Fırsat Kaçırma", role: "Hareketsiz, Romantik Fırsatları Kaçıran", emotion: "Duygusal Tıkanıklık, Hayal Kırıklığı, Hareketsizlik", situation: "Duygusal Durgunluk", number_rep: "Şövalye / Durağanlık", archetype: "Fırsat Kaçırma", energy: "Dengesiz Yang", person_rep: "Hareketsiz veya Fırsatları Değerlendiremeyen Partner", astrology: "Akrep / Balık Gölgesi" } },
+    { name: "Kupa Şövalyesi", upright: { positive: "Romantizm, Duygusal Girişim, İlham", negative: "Duygusal Kararsızlık, Yüzeysellik", role: "Romantik, Teklif Eden", emotion: "Aşk, Coşku, Romantizm", situation: "Romantik Teklif, Duygusal Yolculuk", number_rep: "Şövalye / Duygusal Hareket", archetype: "Romantik Girişim", energy: "Verici (Yang)", person_rep: "Romantik Partner, Teklif Eden Erkek Arkadaş, İlham Veren İş Arkadaşı", astrology: "Akrep / Balık Etkisi" }, reversed: { positive: "Farkındalık Kazanma ve Fırsatları Değerlendirme", negative: "Hareketsizlik, Duygusal Blokaj, Fırsat Kaçırma", role: "Hareketsiz, Romantik Fırsatları Kaçıran", emotion: "Duygusal Tıkanıklık, Hayal Kırıklığı, Hareketsizlik", situation: "Duygusal Durgunluk", number_rep: "Şövalye / Durağanlık", archetype: "Fırsat Kaçırma", energy: "Dengesiz Yang", person_rep: "Hareketsiz veya Fırsatları Değerlendiremeyen Partner", astrology: "Akrep / Balık Gölgesi" } },
     // ID 35: KUPA KRALİÇESİ (Queen of Cups)
     { name: "Kupa Kraliçesi", upright: { positive: "Duygusal Olgunluk, Sezgi, Empati ve Şefkat", negative: "Aşırı Duygusallık, Bağımlılık, Savunmasızlık", role: "Şefkatli, Empatik Lider", emotion: "Empati, Şefkat, Sezgisellik", situation: "Empatik İlişkiler, Sezgisel Farkındalık", number_rep: "Kraliçe / Sezgi, Şefkat", archetype: "Duygusal Denge", energy: "Alıcı (Yin)", person_rep: "Anne, Kız Kardeş, Sezgisi Güçlü Kadın, Empatik Yönetici", astrology: "Yengeç burcu" }, reversed: { positive: "Dengesizlik Fark Edilip Olgunluk Kazanma", negative: "Duygusal Blokaj, Aşırı Savunmasızlık, Sezgi Kaybı", role: "Duygusal Olarak Dengesiz", emotion: "Dengesizlik, Aşırı Duygusallık, Savunmasızlık", situation: "Duygusal Dengesizlik, Çatışmalar", number_rep: "Kraliçe / Dengesizlik", archetype: "Sezgi Kaybı", energy: "Dengesiz Yin", person_rep: "Duygusal Olarak Dengesiz Ebeveyn, Bağımlı Partner", astrology: "Yengeç burcunun Gölgesi" } },
     // ID 36: KUPA KRALI (King of Cups)
@@ -328,14 +331,15 @@ const TAROT_CARD_DATA = [
     { name: "Tılsım Onlusu", upright: { positive: "Aile, Miraz, Güvenlik", negative: "Aile Sorunları, Mali Kayıp", role: "Aile", emotion: "Aile Güvenliği, Miras, Huzur", situation: "Kalıcı Başarı", number_rep: "On", archetype: "Aile", energy: "Pasif", person_rep: "Aile Büyüğü, Miras Bırakan Kişi, Güvenliğe Önem Veren Ebeveyn", astrology: "Başak burcu" }, reversed: { positive: "Güvenliği Kazanma", negative: "Uyumsuzluk, Tartışmalar", role: "Sorunlu", emotion: "Uyumsuzluk, Aile Sorunları, Mali Kayıp", situation: "Aile Sorunları", number_rep: "On", archetype: "Uyumsuzluk", energy: "Blokaj", person_rep: "Mali Kayıp Yaşayan Akraba, Uyumsuz Partner", astrology: "Başak burcunun Gölgesi" } },
     { name: "Tılsım Uşağı", upright: { positive: "Yeni Fırsatlar, İlham", negative: "Savurganlık, Tembellik", role: "Haberci", emotion: "Merak, Yeni Umut, Coşku", situation: "Maddi Haber", number_rep: "Uşak", archetype: "Fırsat", energy: "Pasif", person_rep: "Maddi Gelişim Arayan Genç, Yeni Fırsat Sunan İş Arkadaşı", astrology: "Toprak Elementi" }, reversed: { positive: "Kararlılık Kazanma", negative: "Kötü Haber, Kararsızlık", role: "Savurgan", emotion: "Kararsızlık, Savurganlık, Hayal Kırıklığı", situation: "Kararsızlık", number_rep: "Uşak", archetype: "Blokaj", energy: "Blokaj", person_rep: "Kararsız Genç, Savurgan Akraba", astrology: "Toprak Elementi Gölgesi" } },
     { name: "Tılsım Şövalyesi", upright: { positive: "Güvenilirlik, Sabır, Sorumluluk", negative: "Durağanlık, Tembellik", role: "Güvenilir", emotion: "Güvenilirlik, Sabır, Sorumluluk", situation: "Verimlilik", number_rep: "Şövalye", archetype: "Sorumluluk", energy: "Pasif", person_rep: "Güvenilir Çalışan, Sorumlu Partner, Sabırlı Birey", astrology: "Toprak Elementi" }, reversed: { positive: "Eyleme Geçme", negative: "İşi Erteleme, Sıkıcılık", role: "Sıkıcı", emotion: "Gecikme, Tembellik, Sıkıcılık", situation: "Gecikme", number_rep: "Şövalye", archetype: "Gecikme", energy: "Blokaj", person_rep: "Tembel İş Arkadaşı, Geciken Ebeveyn", astrology: "Toprak Elementi Gölgesi" } },
-    { name: "Tılsım Kraliçesi", upright: { positive: "Bakım, Konfor, Pratiklik", negative: "Bağımlılık, Bencil Olma", role: "Anne Figürü", emotion: "Konfor, Bakım, Pratik Zeka", situation: "Konfor", number_rep: "Kraliçe", archetype: "Bakım", energy: "Pasif", person_rep: "Anne, Pratik Zekalı Kadın, Destekleyici Partner", astrology: "Toprak Elementi" }, reversed: { positive: "Dengesizlik Fark Edilip Olgunluk Kazanma", negative: "Dengesizlik, Kıskançlık", role: "Bencil", emotion: "Dengesizlik, Kıskançlık, Bağımlılık", situation: "Bağımlılık", number_rep: "Kraliçe", archetype: "Dengesizlik", energy: "Blokaj", person_rep: "Kıskanç Partner, Bencil Ebeveyn", astrology: "Toprak Elementi Gölgesi" } },
+    { name: "Tılsım Kraliçesi", upright: { positive: "Bakım, Konfor, Pratiklik", negative: "Bağımlılık, Bencil Olma", role: "Anne Figürü", emotion: "Konfor, Bakım, Pratik Zeka", situation: "Konfor", number_rep: "Kraliçe", archetype: "Bakım", energy: "Pasif", person_rep: "Anne, Pratik Zekalı Kadın, Destekleyici Partner", astrology: "Toprak Elementi" }, reversed: { positive: "Bağımsızlık", negative: "Dengesizlik, Kıskançlık", role: "Bencil", emotion: "Dengesizlik, Kıskançlık, Bağımlılık", situation: "Bağımlılık", number_rep: "Kraliçe", archetype: "Dengesizlik", energy: "Blokaj", person_rep: "Kıskanç Partner, Bencil Ebeveyn", astrology: "Toprak Elementi Gölgesi" } },
     { name: "Tılsım Kralı", upright: { positive: "Başarı, Pratiklik", negative: "Açgözlülük, Otoriterlik", role: "Zengin Adam", emotion: "Başarı, İstikrar, Lüks", situation: "Maddi İstikbar, Bolluk", number_rep: "Kral", archetype: "İş Adamı", energy: "Durağan", person_rep: "Başarılı İş Adamı/Patron, Zengin Akraba, Lüks Seven Kişi", astrology: "Toprak Burçları" }, reversed: { positive: "Mali Yapılanma, Pratik Zeka", negative: "Mali Kayıp, Yolsuzluk", role: "Kötü Yönetici", emotion: "Açgözlülük, Kontrol Kaybı, Yolsuzluk", situation: "Maddiyatçılık, Kontrol Kaybı", number_rep: "Kral", archetype: "Yolsuz", energy: "Blokaj", person_rep: "Parayı Kötü Kullanan Kişi, Yolsuz Patron", astrology: "Toprak Burçları" } }
 ];
 // ----------------------------------------------------
 
 function getCardDataById(id) {
     if (id >= 1 && id <= TAROT_CARD_DATA.length) {
-        const data = TAROT_CARD_DATA[id - 1];
+        // Diziden veriyi doğru indeksle çekiyoruz
+        const data = TAROT_CARD_DATA[id - 1]; 
         const imagePath = `/cards/${id}.jpg`;
         const isReversed = Math.random() < 0.5;
         const position = isReversed ? "Ters (Reversed)" : "Düz (Upright)";
@@ -349,17 +353,22 @@ function getCardDataById(id) {
             meaningCategories: categories, 
         };
     }
-    // Veri bulunamazsa (Undefined) Bilinmeyen Kart verisi döndür
+    // Veri bulunamazsa Bilinmeyen Kart verisi döndürülür
     return { 
-        cardName: "Bilinmeyen Kart", 
-        imagePath: "/images/cardback.jpg", // Varsayılan görsel
-        position: "Bilinmiyor", 
+        cardName: "BİLİNMEYEN KART", 
+        imagePath: "/images/cardback.jpg", 
+        position: "HATA", 
         meaningCategories: {
-            positive: "Veri Eksikliği", 
-            negative: "Kart Verisi Sunucuda Yok",
-            emotion: "Hata", 
-            person_rep: "Tanımlanamayan Kişi",
-            // Diğerleri undefined kalabilir
+            positive: "Veri Dizisinde Eksiklik", 
+            negative: "Kart ID Sunucuda Tanımlı Değil",
+            emotion: "HATA", 
+            person_rep: "Tanımlanamayan Kaynak",
+            number_rep: "??",
+            archetype: "HATA",
+            energy: "Blokaj",
+            role: "Hata Kaynağı",
+            situation: "Kritik Sistem Hatası",
+            astrology: "Yok"
         } 
     };
 }
@@ -378,7 +387,170 @@ app.get('/reader_panel.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'public/reader_panel.html'));
 });
 
-// ... (Kayıt/Giriş ve diğer mantık aynı kalır)
+// MÜŞTERİ KULLANICI YÖNETİMİ (Kayıt/Giriş)
+app.post('/register', (req, res) => {
+    const { email, password, name, surname, phone } = req.body;
+    if (!isValidEmail(email)) return res.status(400).json({ success: false, message: 'Geçerli bir e-posta formatı girin.' });
+    if (!isValidPhone(phone)) return res.status(400).json({ success: false, message: 'Geçerli bir telefon numarası girin.' });
+    if (!name || !surname) return res.status(400).json({ success: false, message: 'Ad ve Soyad zorunludur.' });
+    if (password.length < 6) return res.status(400).json({ success: false, message: 'Şifre en az 6 karakter olmalıdır.' });
+    if (users[email]) {
+        return res.status(400).json({ success: false, message: 'Bu e-posta adresi zaten kayıtlı.' });
+    }
+
+    const sessionToken = Math.random() + Math.random().toString(36).substring(2); 
+    users[email] = { email, password, name, surname, phone, sessionToken };
+    activeSessions[sessionToken] = email;
+
+    console.log(`[KAYIT] Yeni müşteri: ${email} (${name} ${surname})`);
+    res.json({ success: true, message: 'Kayıt başarılı.', token: sessionToken, name: name, surname: surname });
+});
+
+app.post('/login', (req, res) => {
+    const { email, password } = req.body;
+    const user = users[email];
+    if (!isValidEmail(email)) return res.status(401).json({ success: false, message: 'Geçersiz e-posta formatı.' });
+    if (!user || user.password !== password) {
+        return res.status(401).json({ success: false, message: 'E-posta veya şifre yanlış.' });
+    }
+
+    const sessionToken = Math.random() + Math.random().toString(36).substring(2);
+    user.sessionToken = sessionToken;
+    activeSessions[sessionToken] = email;
+    
+    console.log(`[GİRİŞ] Müşteri giriş yaptı: ${email}`);
+    res.json({ success: true, message: 'Giriş başarılı.', token: sessionToken, name: user.name, surname: user.surname });
+});
+
+// YÖNETİCİ GİRİŞİ (Kullanıcı Adı ile)
+app.post('/reader-login', (req, res) => {
+    const { username, password } = req.body;
+
+    if (username === READER_CREDENTIALS.username && password === READER_CREDENTIALS.password) {
+        console.log('[READER GİRİŞİ] Başarılı.');
+        res.json({ success: true, token: READER_CREDENTIALS.sessionToken });
+    } else {
+        console.log('[READER GİRİŞİ] Başarısız.');
+        res.status(401).json({ success: false, message: 'Kullanıcı adı veya şifre yanlış.' });
+    }
+});
+
+
+// Socket.IO bağlantılarını dinle (Gerçek zamanlı iletişim)
+io.on('connection', (socket) => {
+    // Kimlik doğrulama
+    socket.on('authenticate', (token) => {
+        const email = activeSessions[token];
+        const user = users[email]; 
+
+        if (user) {
+            socket.data.email = email;
+            socket.data.isReader = (token === READER_CREDENTIALS.sessionToken); 
+            
+            if (socket.data.isReader) {
+                socket.emit('auth_success', { role: 'reader' });
+            } else {
+                if (!readingSession.querentEmail || readingSession.querentEmail === email) {
+                    readingSession.querentEmail = email;
+                    readingSession.selections = []; 
+                    
+                    io.emit('new_reading_session', { email: email, fullName: `${user.name} ${user.surname}` });
+                }
+                socket.emit('auth_success', { role: 'querent', name: user.name, surname: user.surname });
+                socket.emit('start_selection');
+            }
+        } else {
+            socket.emit('auth_fail', 'Geçersiz Token. Tekrar giriş yapın.');
+        }
+    });
+
+    // Kullanıcıdan kart seçimi geldiğinde
+    socket.on('card_selected', (data) => {
+        if (!socket.data.email || socket.data.isReader || socket.data.email !== readingSession.querentEmail) {
+            return;
+        }
+        const cardId = data.cardId;
+        const cardData = getCardDataById(cardId); 
+
+        readingSession.selections.push(cardId);
+        const querentUser = users[socket.data.email];
+
+        io.emit('selection_update', {
+            querentName: `${querentUser.name} ${querentUser.surname}`,
+            cardId: cardId,
+            cardName: cardData.cardName, 
+            imagePath: cardData.imagePath, 
+            meaningCategories: cardData.meaningCategories, 
+            position: cardData.position, 
+            selectionCount: readingSession.selections.length
+        });
+    });
+
+    // ÇÖZÜM KARTI İSTEĞİ (Yönetici Panelinden gelir)
+    socket.on('request_solution_card', (data) => {
+        if (!socket.data.isReader) {
+            socket.emit('error', 'Bu işlemi yapmaya yetkiniz yok.');
+            return;
+        }
+
+        const randomCardId = Math.floor(Math.random() * TAROT_CARD_DATA.length) + 1;
+        const solutionCardData = getCardDataById(randomCardId);
+        
+        const solutionMessage = `
+            ${solutionCardData.cardName} kartı, danışanın şu anki duruma karşı alması gereken net eylemi gösteriyor. 
+            Kartın Düz veya Ters gelmesine bağlı olarak odaklanılması gereken: 
+            **${solutionCardData.position.includes('Düz') ? solutionCardData.meaningCategories.positive : solutionCardData.meaningCategories.negative}**
+        `;
+
+        socket.emit('solution_card_data', {
+            solutionMessage: solutionMessage,
+            cardData: {
+                cardName: solutionCardData.cardName,
+                imagePath: solutionCardData.imagePath,
+                position: solutionCardData.position,
+                querentName: data.querentName || "Bilinmeyen Müşteri"
+            }
+        });
+    });
+
+    // Desteyi Karıştırma ve Oturumu Sıfırlama İsteği
+    socket.on('shuffle_deck', () => {
+        if (!socket.data.isReader) {
+            socket.emit('error', 'Bu işlemi yapmaya yetkiniz yok.');
+            return;
+        }
+
+        readingSession.querentEmail = null;
+        readingSession.selections = [];
+
+        console.log('[SHUFFLE] Deste karıştırıldı ve okuma oturumu sıfırlandı.');
+        io.emit('deck_shuffled', 'Deste başarıyla karıştırıldı. Yeni müşteri bekleyin.');
+    });
+
+    // YÖNETİM ÖZELLİĞİ: Tüm kullanıcıları çekme isteği
+    socket.on('get_all_users', () => {
+        if (!socket.data.isReader) {
+            socket.emit('error', 'Bu işlemi yapmaya yetkiniz yok.');
+            return;
+        }
+        const usersList = Object.values(users)
+            .filter(user => user.email !== READER_CREDENTIALS.email) 
+            .map(user => ({
+                name: user.name,
+                surname: user.surname,
+                email: user.email,
+                phone: user.phone,
+                isCurrentlyReading: (readingSession.querentEmail === user.email) 
+            }));
+
+        socket.emit('all_users_list', usersList);
+    });
+
+    // Bağlantı kesildiğinde
+    socket.on('disconnect', () => {
+        console.log(`Kullanıcı bağlantısı kesildi. E-posta: ${socket.data.email}`);
+    });
+});
 
 // Sunucuyu başlat
 http.listen(PORT, () => {
